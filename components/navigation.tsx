@@ -2,7 +2,23 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Briefcase, Compass, MessageSquare, User, Menu, X } from "lucide-react"
+import {
+  Home,
+  Briefcase,
+  Compass,
+  MessageSquare,
+  User,
+  Menu,
+  X,
+  Lightbulb,
+  Users,
+  Award,
+  BookOpen,
+  BarChart2,
+  Inbox,
+  FolderOpen,
+  TrendingUp,
+} from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -10,93 +26,151 @@ import { LanguageSelector } from "@/components/language-selector"
 
 // Main navigation items
 const mainNavItems = [
-  { name: "Home", href: "/home", icon: Home },
-  { name: "Build", href: "/build", icon: Briefcase },
-  { name: "Discover", href: "/discover", icon: Compass },
-  { name: "Messages", href: "/messages", icon: MessageSquare },
-  { name: "Profile", href: "/profile", icon: User },
+  { name: "Home", href: "/home", icon: Home, group: "Main" },
+  { name: "Build", href: "/build", icon: Briefcase, group: "Main" },
+  { name: "Discover", href: "/discover", icon: Compass, group: "Main" },
+  { name: "Messages", href: "/messages", icon: MessageSquare, group: "Main" },
+  { name: "Profile", href: "/profile", icon: User, group: "Main" },
+]
+
+// Feature navigation items
+const featureNavItems = [
+  { name: "Mentorship", href: "/mentorship", icon: Lightbulb, group: "Features" },
+  { name: "Missions", href: "/missions", icon: Users, group: "Features" },
+  { name: "Co-Lab", href: "/co-lab", icon: Users, group: "Features" },
+  { name: "Skills", href: "/skills", icon: Award, group: "Features" },
+  { name: "Learning", href: "/learning", icon: BookOpen, group: "Features" },
+  { name: "Pulse", href: "/pulse", icon: BarChart2, group: "Features" },
+  { name: "Inbox", href: "/inbox", icon: Inbox, group: "Features" },
+  { name: "Projects", href: "/projects", icon: FolderOpen, group: "Features" },
+  { name: "Showcase", href: "/showcase", icon: TrendingUp, group: "Features" },
 ]
 
 export function Navigation() {
   const pathname = usePathname()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const allItems = [...mainNavItems, ...featureNavItems]
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-sky-100 border-b border-sky-200 shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <>
+      {/* Top Header with Logo and Mobile Menu Toggle */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-sky-500 to-orange-500 shadow-md h-16 flex items-center">
+        <div className="w-full flex items-center justify-between px-4 md:px-6">
           {/* Logo */}
-          <Link href="/home" className="flex items-center">
-            <span className="text-2xl font-bold bg-gradient-to-r from-sky-500 to-orange-500 bg-clip-text text-transparent">
-              Proconnect
-            </span>
+          <Link href="/home" className="flex items-center flex-shrink-0">
+            <span className="text-2xl font-bold text-white">Proconnect</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-4">
-            {mainNavItems.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium flex items-center transition-colors ${
-                    isActive ? "bg-orange-500 text-white" : "text-sky-800 hover:bg-sky-200 hover:text-sky-900"
-                  }`}
-                >
-                  <item.icon className="w-4 h-4 mr-1.5" />
-                  {item.name}
-                </Link>
-              )
-            })}
-          </nav>
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="md:hidden text-white hover:bg-white/20"
+          >
+            {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </Button>
 
-          {/* User Menu (Desktop) */}
-          <div className="hidden md:flex items-center">
+          {/* Desktop User Menu */}
+          <div className="hidden md:flex items-center gap-4">
             <LanguageSelector />
-            <Avatar className="h-8 w-8 ml-4">
+            <Avatar className="h-8 w-8">
               <AvatarImage src="/images/profile-picture.jpeg" alt="@user" />
-              <AvatarFallback className="bg-sky-700 text-white">OC</AvatarFallback>
+              <AvatarFallback className="bg-white text-orange-500">OC</AvatarFallback>
             </Avatar>
           </div>
+        </div>
+      </header>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-sky-800"
-            >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+      {/* Vertical Sidebar Navigation */}
+      <aside
+        className={`
+        fixed top-16 left-0 bottom-0 z-40 bg-white border-r border-gray-200 overflow-y-auto
+        transition-all duration-300 ease-in-out w-64
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+        md:w-64
+      `}
+      >
+        <nav className="py-4">
+          {/* Main Section */}
+          <div className="mb-6">
+            <div className="px-4 mb-3">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Main</h3>
+            </div>
+            <div className="space-y-1 px-2">
+              {mainNavItems.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`
+                      flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all
+                      ${
+                        isActive
+                          ? "bg-gradient-to-r from-sky-50 to-orange-50 text-orange-600 border-l-4 border-orange-500"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }
+                    `}
+                  >
+                    <item.icon className="w-5 h-5 mr-3 flex-shrink-0" />
+                    <span className="truncate">{item.name}</span>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Features Section */}
+          <div>
+            <div className="px-4 mb-3">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Features</h3>
+            </div>
+            <div className="space-y-1 px-2">
+              {featureNavItems.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`
+                      flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all
+                      ${
+                        isActive
+                          ? "bg-gradient-to-r from-sky-50 to-orange-50 text-orange-600 border-l-4 border-orange-500"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }
+                    `}
+                  >
+                    <item.icon className="w-5 h-5 mr-3 flex-shrink-0" />
+                    <span className="truncate">{item.name}</span>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </nav>
+
+        {/* Mobile User Menu in Sidebar */}
+        <div className="md:hidden absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-gray-50 p-4 flex items-center gap-3">
+          <Avatar className="h-10 w-10 flex-shrink-0">
+            <AvatarImage src="/images/profile-picture.jpeg" alt="@user" />
+            <AvatarFallback className="bg-orange-500 text-white">OC</AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-gray-900">User</p>
+            <p className="text-xs text-gray-500">View profile</p>
           </div>
         </div>
-      </div>
+      </aside>
 
-      {/* Mobile Navigation */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-sky-50">
-          <div className="container mx-auto px-4 py-3 space-y-1">
-            {mainNavItems.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
-                    isActive ? "bg-orange-500 text-white" : "text-sky-800 hover:bg-sky-200 hover:text-sky-900"
-                  }`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <item.icon className="w-5 h-5 mr-2" />
-                  {item.name}
-                </Link>
-              )
-            })}
-          </div>
-        </div>
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-30 md:hidden top-16" onClick={() => setSidebarOpen(false)} />
       )}
-    </header>
+    </>
   )
 }

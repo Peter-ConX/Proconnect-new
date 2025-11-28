@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
 import { Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useLanguage } from "@/context/language-context"
 
 const languages = [
   { code: "en", name: "English", flag: "🇺🇸" },
@@ -17,12 +17,12 @@ const languages = [
 ]
 
 export function LanguageSelector() {
-  const [selectedLanguage, setSelectedLanguage] = useState(languages[0])
+  const { selectedLanguage, setSelectedLanguage } = useLanguage()
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-2 bg-transparent">
           <Globe className="h-4 w-4" />
           <span className="hidden sm:inline">
             {selectedLanguage.flag} {selectedLanguage.name}

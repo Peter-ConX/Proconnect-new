@@ -21,12 +21,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <LanguageProvider>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <Navigation />
-            <main className="pt-16 md:pl-64 min-h-screen bg-gray-50">
+            <main className="pt-16 md:pl-64 min-h-screen bg-background">
               <div className="container mx-auto px-4 py-6">{children}</div>
             </main>
             <FloatingChatButton />

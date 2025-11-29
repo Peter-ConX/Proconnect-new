@@ -1,12 +1,30 @@
 import { type NextRequest, NextResponse } from "next/server"
-import Groq from "groq-sdk"
+import OpenAI from "openai"
 
-const groq = new Groq({
-  apiKey: "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",
-})
+// Get API key from environment variables
+const openaiApiKey = process.env.OPENAI_API_KEY
+
+if (!openaiApiKey) {
+  console.error("Missing OPENAI_API_KEY environment variable")
+}
+
+const openai = openaiApiKey
+  ? new OpenAI({
+      apiKey: openaiApiKey,
+    })
+  : null
 
 export async function POST(request: NextRequest) {
   try {
+    if (!openai || !openaiApiKey) {
+      return NextResponse.json(
+        {
+          error: "API key not configured. Please set OPENAI_API_KEY environment variable.",
+        },
+        { status: 500 }
+      )
+    }
+
     const { messages, useCase } = await request.json()
 
     if (!messages || !Array.isArray(messages)) {
@@ -17,9 +35,9 @@ export async function POST(request: NextRequest) {
     const systemMessage = getSystemMessage(useCase)
     const formattedMessages = [{ role: "system", content: systemMessage }, ...messages]
 
-    const completion = await groq.chat.completions.create({
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
       messages: formattedMessages,
-      model: "llama-3.1-70b-versatile",
       temperature: 0.7,
       max_tokens: 1024,
       stream: true,
@@ -54,9 +72,17 @@ export async function POST(request: NextRequest) {
         Connection: "keep-alive",
       },
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error("Petrix API error:", error)
-    return NextResponse.json({ error: "Failed to process request. Please try again." }, { status: 500 })
+    const errorMessage =
+      error?.message || error?.error?.message || "Failed to process request. Please try again."
+    return NextResponse.json(
+      {
+        error: errorMessage,
+        details: process.env.NODE_ENV === "development" ? error?.stack : undefined,
+      },
+      { status: 500 }
+    )
   }
 }
 

@@ -147,7 +147,7 @@ export default function NewsPage() {
   })
 
   return (
-    <div className="pt-20 pb-16">
+    <div className="pt-20 pb-16 bg-background">
       <div className="container px-4 mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">{t("nav.news")}</h1>

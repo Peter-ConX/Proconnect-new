@@ -24,6 +24,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LanguageSelector } from "@/components/language-selector"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { useLanguage } from "@/context/language-context"
 import type { TranslationKey } from "@/lib/translations"
 
@@ -79,6 +80,7 @@ export function Navigation() {
 
           {/* Desktop User Menu */}
           <div className="hidden md:flex items-center gap-4">
+            <ThemeToggle />
             <LanguageSelector />
             <Avatar className="h-8 w-8">
               <AvatarImage src="/images/profile-picture.jpeg" alt="@user" />
@@ -91,7 +93,7 @@ export function Navigation() {
       {/* Vertical Sidebar Navigation */}
       <aside
         className={`
-        fixed top-16 left-0 bottom-0 z-40 bg-white border-r border-gray-200 overflow-y-auto
+        fixed top-16 left-0 bottom-0 z-40 bg-background border-r border-border overflow-y-auto
         transition-all duration-300 ease-in-out w-64
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         md:w-64
@@ -101,7 +103,7 @@ export function Navigation() {
           {/* Main Section */}
           <div className="mb-6">
             <div className="px-4 mb-3">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("nav.main")}</h3>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("nav.main")}</h3>
             </div>
             <div className="space-y-1 px-2">
               {mainNavItems.map((item) => {
@@ -116,7 +118,7 @@ export function Navigation() {
                       ${
                         isActive
                           ? "bg-gradient-to-r from-sky-50 to-orange-50 text-orange-600 border-l-4 border-orange-500"
-                          : "text-gray-700 hover:bg-gray-100"
+                          : "text-foreground hover:bg-muted"
                       }
                     `}
                   >
@@ -131,7 +133,7 @@ export function Navigation() {
           {/* Features Section */}
           <div>
             <div className="px-4 mb-3">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("nav.features")}</h3>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("nav.features")}</h3>
             </div>
             <div className="space-y-1 px-2">
               {featureNavItems.map((item) => {
@@ -146,7 +148,7 @@ export function Navigation() {
                       ${
                         isActive
                           ? "bg-gradient-to-r from-sky-50 to-orange-50 text-orange-600 border-l-4 border-orange-500"
-                          : "text-gray-700 hover:bg-gray-100"
+                          : "text-foreground hover:bg-muted"
                       }
                     `}
                   >
@@ -160,14 +162,18 @@ export function Navigation() {
         </nav>
 
         {/* Mobile User Menu in Sidebar */}
-        <div className="md:hidden absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-gray-50 p-4 flex items-center gap-3">
+        <div className="md:hidden absolute bottom-0 left-0 right-0 border-t border-border bg-background p-4 flex items-center gap-3">
           <Avatar className="h-10 w-10 flex-shrink-0">
             <AvatarImage src="/images/profile-picture.jpeg" alt="@user" />
             <AvatarFallback className="bg-orange-500 text-white">OC</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">{t("nav.user")}</p>
-            <p className="text-xs text-gray-500">{t("nav.viewProfile")}</p>
+            <p className="text-sm font-medium text-foreground">{t("nav.user")}</p>
+            <p className="text-xs text-muted-foreground">{t("nav.viewProfile")}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <LanguageSelector />
           </div>
         </div>
       </aside>

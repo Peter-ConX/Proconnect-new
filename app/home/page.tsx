@@ -157,7 +157,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="pt-20 pb-16">
+    <div className="pt-20 pb-16 bg-background">
       <div className="container px-4 mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Sidebar - Profile Card */}
@@ -203,11 +203,11 @@ export default function HomePage() {
           {/* Main Content - Feed */}
           <div className="lg:col-span-2">
             {/* Post Creation */}
-            <Card className="border-none shadow-lg mb-6">
-              <CardHeader className="pb-3">
+            <Card className="border-none shadow-lg mb-6 select-none">
+              <CardHeader className="pb-3 select-none">
                 <div className="flex gap-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src="/images/profile-picture.jpeg" alt="@user" />
+                  <Avatar className="w-10 h-10 select-none">
+                    <AvatarImage src="/images/profile-picture.jpeg" alt="@user" draggable={false} />
                     <AvatarFallback className="bg-sky-700 text-white">OC</AvatarFallback>
                   </Avatar>
                   <Textarea
@@ -254,24 +254,24 @@ export default function HomePage() {
               <TabsContent value="for-you" className="mt-4 space-y-6">
                 {/* Posts */}
                 {samplePosts.map((post) => (
-                  <Card key={post.id} className="border-none shadow-md hover:shadow-lg transition-shadow">
-                    <CardHeader className="pb-3">
+                  <Card key={post.id} className="border-none shadow-md hover:shadow-lg transition-shadow select-none">
+                    <CardHeader className="pb-3 select-none">
                       <div className="flex justify-between">
                         <div className="flex items-start gap-3">
-                          <Avatar className="border">
-                            <AvatarImage src={post.author.avatar || "/placeholder.svg"} alt={post.author.name} />
+                          <Avatar className="border select-none">
+                            <AvatarImage src={post.author.avatar || "/placeholder.svg"} alt={post.author.name} draggable={false} />
                             <AvatarFallback className="bg-sky-700 text-white">
                               {post.author.name.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
-                          <div>
+                          <div className="select-none">
                             <div className="flex items-center gap-1">
-                              <p className="font-medium">{post.author.name}</p>
+                              <p className="font-medium select-none">{post.author.name}</p>
                               <VerifiedBadge type={getVerificationType(post.author)} />
-                              <p className="text-sm text-gray-500">{post.author.handle}</p>
-                              <p className="text-sm text-gray-500">• {post.time}</p>
+                              <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">{post.author.handle}</p>
+                              <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">• {post.time}</p>
                             </div>
-                            <p className="text-sm text-gray-500">{post.author.role}</p>
+                            <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">{post.author.role}</p>
                           </div>
                         </div>
                         <DropdownMenu>
@@ -302,17 +302,18 @@ export default function HomePage() {
                       <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">{post.content}</p>
                       {post.image && (
                         <div className="mt-3 rounded-lg overflow-hidden">
-                          <img src={post.image || "/placeholder.svg"} alt="Post attachment" className="w-full h-auto" />
+                          <img src={post.image || "/placeholder.svg"} alt="Post attachment" className="w-full h-auto select-none" draggable={false} />
                         </div>
                       )}
                       {post.link && (
                         <div className="mt-3 border rounded-lg overflow-hidden">
                           <div className="flex flex-col md:flex-row">
-                            <div className="md:w-1/3 h-40 md:h-auto bg-gray-100 dark:bg-gray-800">
+                            <div className="md:w-1/3 h-40 md:h-auto bg-muted dark:bg-muted">
                               <img
                                 src={post.link.image || "/placeholder.svg"}
                                 alt={post.link.title}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover select-none"
+                                draggable={false}
                               />
                             </div>
                             <div className="md:w-2/3 p-4">
@@ -372,22 +373,22 @@ export default function HomePage() {
 
               <TabsContent value="following" className="mt-4 space-y-6">
                 {/* Following Tab Content */}
-                <Card className="border-none shadow-md hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-3">
+                <Card className="border-none shadow-md hover:shadow-lg transition-shadow select-none">
+                  <CardHeader className="pb-3 select-none">
                     <div className="flex justify-between">
                       <div className="flex items-start gap-3">
-                        <Avatar className="border">
-                          <AvatarImage src="/placeholder.svg?height=40&width=40&text=EC" alt="Emma Clark" />
+                        <Avatar className="border select-none">
+                          <AvatarImage src="/placeholder.svg?height=40&width=40&text=EC" alt="Emma Clark" draggable={false} />
                           <AvatarFallback className="bg-sky-700 text-white">EC</AvatarFallback>
                         </Avatar>
-                        <div>
+                        <div className="select-none">
                           <div className="flex items-center gap-1">
-                            <p className="font-medium">Emma Clark</p>
+                            <p className="font-medium select-none">Emma Clark</p>
                             <VerifiedBadge type="high-profile" />
-                            <p className="text-sm text-gray-500">@emmaclark</p>
-                            <p className="text-sm text-gray-500">• 3 hours ago</p>
+                            <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">@emmaclark</p>
+                            <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">• 3 hours ago</p>
                           </div>
-                          <p className="text-sm text-gray-500">Product Designer at CreativeStudio</p>
+                          <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">Product Designer at CreativeStudio</p>
                         </div>
                       </div>
                       <Button variant="ghost" size="icon" className="text-gray-500">
@@ -401,7 +402,7 @@ export default function HomePage() {
                       Excited to announce that I'll be speaking at the UX Conference next month about designing for
                       accessibility. Hope to see some of you there! #UXDesign #Accessibility
                     </p>
-                    <div className="mt-3 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                    <div className="mt-3 p-4 border rounded-lg bg-muted dark:bg-muted">
                       <div className="flex items-center gap-2 mb-2">
                         <Calendar className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                         <span className="font-medium">UX Conference 2023</span>
@@ -455,14 +456,14 @@ export default function HomePage() {
                           />
                           <AvatarFallback className="bg-sky-700 text-white">CBN</AvatarFallback>
                         </Avatar>
-                        <div>
+                        <div className="select-none">
                           <div className="flex items-center gap-1">
-                            <p className="font-medium">Central Bank of Nigeria</p>
+                            <p className="font-medium select-none">Central Bank of Nigeria</p>
                             <VerifiedBadge type="organization" />
-                            <p className="text-sm text-gray-500">@cbn</p>
-                            <p className="text-sm text-gray-500">• 1 day ago</p>
+                            <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">@cbn</p>
+                            <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">• 1 day ago</p>
                           </div>
-                          <p className="text-sm text-gray-500">Nigeria's Central Banking Authority</p>
+                          <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">Nigeria's Central Banking Authority</p>
                         </div>
                       </div>
                       <Badge className="bg-orange-500 text-white flex items-center gap-1">
@@ -480,7 +481,8 @@ export default function HomePage() {
                       <img
                         src="/placeholder.svg?height=300&width=600"
                         alt="Financial inclusion initiative"
-                        className="w-full h-auto"
+                        className="w-full h-auto select-none"
+                        draggable={false}
                       />
                     </div>
                   </CardContent>
@@ -528,7 +530,7 @@ export default function HomePage() {
               <Input
                 type="search"
                 placeholder={t("home.searchPlaceholder")}
-                className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 pl-10"
+                className="bg-background dark:bg-background border-border pl-10"
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             </div>

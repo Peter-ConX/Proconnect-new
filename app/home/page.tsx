@@ -40,6 +40,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { VerifiedBadge } from "@/components/verified-badge"
 import { getVerificationType } from "@/lib/verification"
+import { useLanguage } from "@/context/language-context"
 
 // Sample user data with verification status
 const currentUser: User = {
@@ -143,6 +144,7 @@ const samplePosts = [
 ]
 
 export default function HomePage() {
+  const { t } = useLanguage()
   const [postContent, setPostContent] = useState("")
   const [activeTab, setActiveTab] = useState("for-you")
 
@@ -176,15 +178,15 @@ export default function HomePage() {
               <CardContent className="px-4 py-3">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Posts</p>
+                    <p className="text-sm font-medium text-gray-500">{t("home.posts")}</p>
                     <p className="text-lg font-semibold">128</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Following</p>
+                    <p className="text-sm font-medium text-gray-500">{t("home.following")}</p>
                     <p className="text-lg font-semibold">542</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Followers</p>
+                    <p className="text-sm font-medium text-gray-500">{t("home.followers")}</p>
                     <p className="text-lg font-semibold">1.2K</p>
                   </div>
                 </div>
@@ -192,7 +194,7 @@ export default function HomePage() {
               <Separator />
               <CardFooter className="flex justify-center p-4">
                 <Button variant="outline" className="w-full" asChild>
-                  <Link href="/profile">View Profile</Link>
+                  <Link href="/profile">{t("home.viewProfile")}</Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -209,7 +211,7 @@ export default function HomePage() {
                     <AvatarFallback className="bg-sky-700 text-white">OC</AvatarFallback>
                   </Avatar>
                   <Textarea
-                    placeholder="Share your professional insights..."
+                    placeholder={t("home.sharePlaceholder")}
                     className="flex-1 resize-none focus-visible:ring-sky-500"
                     value={postContent}
                     onChange={(e) => setPostContent(e.target.value)}
@@ -220,15 +222,15 @@ export default function HomePage() {
                 <div className="flex gap-2">
                   <Button variant="ghost" size="icon" className="text-gray-500 hover:text-sky-500">
                     <ImageIcon className="w-5 h-5" />
-                    <span className="sr-only">Add Image</span>
+                    <span className="sr-only">{t("home.addImage")}</span>
                   </Button>
                   <Button variant="ghost" size="icon" className="text-gray-500 hover:text-sky-500">
                     <LinkIcon className="w-5 h-5" />
-                    <span className="sr-only">Add Link</span>
+                    <span className="sr-only">{t("home.addLink")}</span>
                   </Button>
                   <Button variant="ghost" size="icon" className="text-gray-500 hover:text-sky-500">
                     <Smile className="w-5 h-5" />
-                    <span className="sr-only">Add Emoji</span>
+                    <span className="sr-only">{t("home.addEmoji")}</span>
                   </Button>
                 </div>
                 <Button
@@ -236,7 +238,7 @@ export default function HomePage() {
                   onClick={handlePostSubmit}
                   disabled={!postContent.trim()}
                 >
-                  Post
+                  {t("home.post")}
                 </Button>
               </CardFooter>
             </Card>
@@ -244,9 +246,9 @@ export default function HomePage() {
             {/* Feed Tabs */}
             <Tabs defaultValue="for-you" className="mb-6" onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="for-you">For You</TabsTrigger>
-                <TabsTrigger value="following">Following</TabsTrigger>
-                <TabsTrigger value="trending">Trending</TabsTrigger>
+                <TabsTrigger value="for-you">{t("home.forYou")}</TabsTrigger>
+                <TabsTrigger value="following">{t("home.following")}</TabsTrigger>
+                <TabsTrigger value="trending">{t("home.trending")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="for-you" className="mt-4 space-y-6">
@@ -276,21 +278,21 @@ export default function HomePage() {
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="text-gray-500">
                               <MoreHorizontal className="w-5 h-5" />
-                              <span className="sr-only">More options</span>
+                              <span className="sr-only">{t("home.moreOptions")}</span>
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem>
                               <UserIcon className="w-4 h-4 mr-2" />
-                              View Profile
+                              {t("home.viewProfile")}
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                               <Bookmark className="w-4 h-4 mr-2" />
-                              Save Post
+                              {t("home.savePost")}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-red-600">
-                              <span>Report Post</span>
+                              <span>{t("home.reportPost")}</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -319,7 +321,7 @@ export default function HomePage() {
                                 href={post.link.url}
                                 className="text-sm text-sky-600 dark:text-sky-400 hover:underline mt-2 inline-block"
                               >
-                                Read Article
+                                {t("home.readArticle")}
                               </a>
                             </div>
                           </div>
@@ -356,11 +358,11 @@ export default function HomePage() {
                           }`}
                         >
                           <Bookmark className="w-4 h-4" />
-                          <span className="sr-only">Bookmark</span>
+                          <span className="sr-only">{t("home.bookmark")}</span>
                         </Button>
                         <Button variant="ghost" size="icon" className="text-gray-600 dark:text-gray-300">
                           <Share2 className="w-4 h-4" />
-                          <span className="sr-only">Share</span>
+                          <span className="sr-only">{t("home.share")}</span>
                         </Button>
                       </div>
                     </CardFooter>
@@ -390,7 +392,7 @@ export default function HomePage() {
                       </div>
                       <Button variant="ghost" size="icon" className="text-gray-500">
                         <MoreHorizontal className="w-5 h-5" />
-                        <span className="sr-only">More options</span>
+                        <span className="sr-only">{t("home.moreOptions")}</span>
                       </Button>
                     </div>
                   </CardHeader>
@@ -408,7 +410,7 @@ export default function HomePage() {
                         <Clock className="w-4 h-4" />
                         <span>June 15-17, 2023 • San Francisco, CA</span>
                       </div>
-                      <Button className="mt-3 bg-sky-500 hover:bg-sky-600 text-white">Register Now</Button>
+                      <Button className="mt-3 bg-sky-500 hover:bg-sky-600 text-white">{t("home.registerNow")}</Button>
                     </div>
                   </CardContent>
                   <CardFooter className="flex justify-between">
@@ -429,11 +431,11 @@ export default function HomePage() {
                       </Button>
                       <Button variant="ghost" size="icon" className="text-gray-600 dark:text-gray-300">
                         <Bookmark className="w-4 h-4" />
-                        <span className="sr-only">Bookmark</span>
+                        <span className="sr-only">{t("home.bookmark")}</span>
                       </Button>
                       <Button variant="ghost" size="icon" className="text-gray-600 dark:text-gray-300">
                         <Share2 className="w-4 h-4" />
-                        <span className="sr-only">Share</span>
+                        <span className="sr-only">{t("home.share")}</span>
                       </Button>
                     </div>
                   </CardFooter>
@@ -465,7 +467,7 @@ export default function HomePage() {
                       </div>
                       <Badge className="bg-orange-500 text-white flex items-center gap-1">
                         <TrendingUp className="w-3 h-3" />
-                        Trending
+                        {t("home.trending")}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -500,11 +502,11 @@ export default function HomePage() {
                       </Button>
                       <Button variant="ghost" size="icon" className="text-gray-600 dark:text-gray-300">
                         <Bookmark className="w-4 h-4" />
-                        <span className="sr-only">Bookmark</span>
+                        <span className="sr-only">{t("home.bookmark")}</span>
                       </Button>
                       <Button variant="ghost" size="icon" className="text-gray-600 dark:text-gray-300">
                         <Share2 className="w-4 h-4" />
-                        <span className="sr-only">Share</span>
+                        <span className="sr-only">{t("home.share")}</span>
                       </Button>
                     </div>
                   </CardFooter>
@@ -514,7 +516,7 @@ export default function HomePage() {
 
             <div className="flex justify-center mt-8">
               <Button variant="outline" size="lg" className="gap-1">
-                Load More
+                {t("home.loadMore")}
               </Button>
             </div>
           </div>
@@ -525,7 +527,7 @@ export default function HomePage() {
             <div className="relative">
               <Input
                 type="search"
-                placeholder="Search posts, people, topics..."
+                placeholder={t("home.searchPlaceholder")}
                 className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 pl-10"
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -534,24 +536,24 @@ export default function HomePage() {
             {/* Trending Topics */}
             <Card className="border-none shadow-lg">
               <CardHeader className="pb-3">
-                <h3 className="text-lg font-semibold">Trending Topics</h3>
+                <h3 className="text-lg font-semibold">{t("home.trendingTopics")}</h3>
               </CardHeader>
               <CardContent className="px-4 py-0">
                 <div className="space-y-4">
                   {[
-                    { tag: "#ReactJS", posts: "2.4K posts" },
-                    { tag: "#UXDesign", posts: "1.8K posts" },
-                    { tag: "#AIinTech", posts: "3.2K posts" },
-                    { tag: "#RemoteWork", posts: "1.5K posts" },
-                    { tag: "#ProductManagement", posts: "980 posts" },
+                    { tag: "#ReactJS", posts: "2.4K" },
+                    { tag: "#UXDesign", posts: "1.8K" },
+                    { tag: "#AIinTech", posts: "3.2K" },
+                    { tag: "#RemoteWork", posts: "1.5K" },
+                    { tag: "#ProductManagement", posts: "980" },
                   ].map((topic, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-sky-600 dark:text-sky-400">{topic.tag}</p>
-                        <p className="text-xs text-gray-500">{topic.posts}</p>
+                        <p className="text-xs text-gray-500">{topic.posts} {t("home.postsCount")}</p>
                       </div>
                       <Button variant="ghost" size="sm">
-                        Follow
+                        {t("home.follow")}
                       </Button>
                     </div>
                   ))}
@@ -559,7 +561,7 @@ export default function HomePage() {
               </CardContent>
               <CardFooter className="pt-2">
                 <Button variant="ghost" className="w-full text-sky-600 dark:text-sky-400">
-                  Show More
+                  {t("home.showMore")}
                 </Button>
               </CardFooter>
             </Card>
@@ -567,7 +569,7 @@ export default function HomePage() {
             {/* Who to Follow */}
             <Card className="border-none shadow-lg">
               <CardHeader className="pb-3">
-                <h3 className="text-lg font-semibold">Who to Follow</h3>
+                <h3 className="text-lg font-semibold">{t("home.whoToFollow")}</h3>
               </CardHeader>
               <CardContent className="px-4 py-0">
                 <div className="space-y-4">
@@ -606,7 +608,7 @@ export default function HomePage() {
                         </div>
                       </div>
                       <Button size="sm" className="bg-sky-500 hover:bg-sky-600 text-white">
-                        Follow
+                        {t("home.follow")}
                       </Button>
                     </div>
                   ))}
@@ -614,7 +616,7 @@ export default function HomePage() {
               </CardContent>
               <CardFooter className="pt-2">
                 <Button variant="ghost" className="w-full text-sky-600 dark:text-sky-400">
-                  Show More
+                  {t("home.showMore")}
                 </Button>
               </CardFooter>
             </Card>
@@ -622,7 +624,7 @@ export default function HomePage() {
             {/* Upcoming Events */}
             <Card className="border-none shadow-lg">
               <CardHeader className="pb-3">
-                <h3 className="text-lg font-semibold">Upcoming Events</h3>
+                <h3 className="text-lg font-semibold">{t("home.upcomingEvents")}</h3>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -651,7 +653,7 @@ export default function HomePage() {
                         <p className="font-medium">{event.title}</p>
                         {event.organizer && (
                           <div className="ml-1 text-xs text-gray-500">
-                            by {event.organizer.name}
+                            {t("home.by")} {event.organizer.name}
                             <VerifiedBadge type={event.organizer.verificationType as any} size="sm" />
                           </div>
                         )}
@@ -665,7 +667,7 @@ export default function HomePage() {
                         <span>{event.location}</span>
                       </div>
                       <Button size="sm" variant="outline" className="w-full mt-3">
-                        Interested
+                        {t("home.interested")}
                       </Button>
                     </div>
                   ))}

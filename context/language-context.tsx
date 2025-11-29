@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
+import { translations, type TranslationKey } from "@/lib/translations"
 
 export interface Language {
   code: string
@@ -12,6 +13,7 @@ export interface Language {
 interface LanguageContextType {
   selectedLanguage: Language
   setSelectedLanguage: (language: Language) => void
+  t: (key: TranslationKey) => string
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
@@ -52,8 +54,18 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.lang = language.code
   }
 
+  // Translation function
+  const t = (key: TranslationKey): string => {
+    const langTranslations = translations[selectedLanguage.code]
+    if (!langTranslations) {
+      // Fallback to English if translation not found
+      return translations.en[key] || key
+    }
+    return langTranslations[key] || translations.en[key] || key
+  }
+
   return (
-    <LanguageContext.Provider value={{ selectedLanguage, setSelectedLanguage }}>{children}</LanguageContext.Provider>
+    <LanguageContext.Provider value={{ selectedLanguage, setSelectedLanguage, t }}>{children}</LanguageContext.Provider>
   )
 }
 

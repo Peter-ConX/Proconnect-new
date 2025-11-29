@@ -7,6 +7,7 @@ import {
   Briefcase,
   Compass,
   MessageSquare,
+  Newspaper,
   User,
   Menu,
   X,
@@ -23,32 +24,36 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LanguageSelector } from "@/components/language-selector"
+import { useLanguage } from "@/context/language-context"
+import type { TranslationKey } from "@/lib/translations"
 
-// Main navigation items
-const mainNavItems = [
-  { name: "Home", href: "/home", icon: Home, group: "Main" },
-  { name: "Build", href: "/build", icon: Briefcase, group: "Main" },
-  { name: "Discover", href: "/discover", icon: Compass, group: "Main" },
-  { name: "Messages", href: "/messages", icon: MessageSquare, group: "Main" },
-  { name: "Profile", href: "/profile", icon: User, group: "Main" },
+// Main navigation items structure (translation keys will be used for names)
+const mainNavItems: Array<{ nameKey: TranslationKey; href: string; icon: any; group: string }> = [
+  { nameKey: "nav.home", href: "/home", icon: Home, group: "Main" },
+  { nameKey: "nav.build", href: "/build", icon: Briefcase, group: "Main" },
+  { nameKey: "nav.discover", href: "/discover", icon: Compass, group: "Main" },
+  { nameKey: "nav.messages", href: "/messages", icon: MessageSquare, group: "Main" },
+  { nameKey: "nav.news", href: "/news", icon: Newspaper, group: "Main" },
+  { nameKey: "nav.profile", href: "/profile", icon: User, group: "Main" },
 ]
 
-// Feature navigation items
-const featureNavItems = [
-  { name: "Mentorship", href: "/mentorship", icon: Lightbulb, group: "Features" },
-  { name: "Missions", href: "/missions", icon: Users, group: "Features" },
-  { name: "Co-Lab", href: "/co-lab", icon: Users, group: "Features" },
-  { name: "Skills", href: "/skills", icon: Award, group: "Features" },
-  { name: "Learning", href: "/learning", icon: BookOpen, group: "Features" },
-  { name: "Pulse", href: "/pulse", icon: BarChart2, group: "Features" },
-  { name: "Inbox", href: "/inbox", icon: Inbox, group: "Features" },
-  { name: "Projects", href: "/projects", icon: FolderOpen, group: "Features" },
-  { name: "Showcase", href: "/showcase", icon: TrendingUp, group: "Features" },
+// Feature navigation items structure (translation keys will be used for names)
+const featureNavItems: Array<{ nameKey: TranslationKey; href: string; icon: any; group: string }> = [
+  { nameKey: "nav.mentorship", href: "/mentorship", icon: Lightbulb, group: "Features" },
+  { nameKey: "nav.missions", href: "/missions", icon: Users, group: "Features" },
+  { nameKey: "nav.coLab", href: "/co-lab", icon: Users, group: "Features" },
+  { nameKey: "nav.skills", href: "/skills", icon: Award, group: "Features" },
+  { nameKey: "nav.learning", href: "/learning", icon: BookOpen, group: "Features" },
+  { nameKey: "nav.pulse", href: "/pulse", icon: BarChart2, group: "Features" },
+  { nameKey: "nav.inbox", href: "/inbox", icon: Inbox, group: "Features" },
+  { nameKey: "nav.projects", href: "/projects", icon: FolderOpen, group: "Features" },
+  { nameKey: "nav.showcase", href: "/showcase", icon: TrendingUp, group: "Features" },
 ]
 
 export function Navigation() {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { t } = useLanguage()
 
   const allItems = [...mainNavItems, ...featureNavItems]
 
@@ -96,14 +101,14 @@ export function Navigation() {
           {/* Main Section */}
           <div className="mb-6">
             <div className="px-4 mb-3">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Main</h3>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("nav.main")}</h3>
             </div>
             <div className="space-y-1 px-2">
               {mainNavItems.map((item) => {
                 const isActive = pathname === item.href
                 return (
                   <Link
-                    key={item.name}
+                    key={item.nameKey}
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
                     className={`
@@ -116,7 +121,7 @@ export function Navigation() {
                     `}
                   >
                     <item.icon className="w-5 h-5 mr-3 flex-shrink-0" />
-                    <span className="truncate">{item.name}</span>
+                    <span className="truncate">{t(item.nameKey)}</span>
                   </Link>
                 )
               })}
@@ -126,14 +131,14 @@ export function Navigation() {
           {/* Features Section */}
           <div>
             <div className="px-4 mb-3">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Features</h3>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("nav.features")}</h3>
             </div>
             <div className="space-y-1 px-2">
               {featureNavItems.map((item) => {
                 const isActive = pathname === item.href
                 return (
                   <Link
-                    key={item.name}
+                    key={item.nameKey}
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
                     className={`
@@ -146,7 +151,7 @@ export function Navigation() {
                     `}
                   >
                     <item.icon className="w-5 h-5 mr-3 flex-shrink-0" />
-                    <span className="truncate">{item.name}</span>
+                    <span className="truncate">{t(item.nameKey)}</span>
                   </Link>
                 )
               })}
@@ -161,8 +166,8 @@ export function Navigation() {
             <AvatarFallback className="bg-orange-500 text-white">OC</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">User</p>
-            <p className="text-xs text-gray-500">View profile</p>
+            <p className="text-sm font-medium text-gray-900">{t("nav.user")}</p>
+            <p className="text-xs text-gray-500">{t("nav.viewProfile")}</p>
           </div>
         </div>
       </aside>

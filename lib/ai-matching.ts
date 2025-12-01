@@ -91,4 +91,3 @@ export function findCollaboratorMatches(userProfile: UserProfile, users: UserPro
     .sort((a, b) => b.matchScore - a.matchScore)
     .slice(0, 5)
 }
-

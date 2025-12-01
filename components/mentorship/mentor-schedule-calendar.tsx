@@ -162,4 +162,3 @@ export function MentorScheduleCalendar({ mentorId }: { mentorId: string }) {
     </div>
   )
 }
-

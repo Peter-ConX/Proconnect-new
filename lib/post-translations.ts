@@ -65,4 +65,3 @@ export const postTranslations: Record<string, Record<string, string>> = {
     post4: "Novas diretrizes sobre saúde mental no local de trabalho. Os empregadores desempenham um papel crucial no apoio ao bem-estar dos funcionários. Leia nosso relatório abrangente.",
   },
 }
-

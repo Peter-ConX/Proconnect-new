@@ -32,4 +32,3 @@ export function updateUser(email: string, updates: Partial<UserData>): UserData 
   userStorage.set(email.toLowerCase(), updated)
   return updated
 }
-

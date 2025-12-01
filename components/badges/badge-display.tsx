@@ -87,4 +87,3 @@ export function BadgeDisplay({ badges, title = "Badges & Certificates" }: BadgeD
     </Card>
   )
 }
-

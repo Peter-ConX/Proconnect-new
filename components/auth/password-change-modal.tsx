@@ -175,4 +175,3 @@ export function PasswordChangeModal({ isOpen, onClose, email }: PasswordChangeMo
     </div>
   )
 }
-

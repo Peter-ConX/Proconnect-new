@@ -43,4 +43,3 @@ export function markMenteeEnteredChat(mentorId: string, menteeId: string) {
     menteeStorage.set(mentorId, mentees)
   }
 }
-

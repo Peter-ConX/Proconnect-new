@@ -29,4 +29,3 @@ export function generateStrongPassword(length: number = 16): string {
     .sort(() => Math.random() - 0.5)
     .join("")
 }
-

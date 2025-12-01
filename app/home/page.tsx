@@ -41,6 +41,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { VerifiedBadge } from "@/components/verified-badge"
 import { getVerificationType } from "@/lib/verification"
 import { useLanguage } from "@/context/language-context"
+import { postTranslations } from "@/lib/post-translations"
 
 // Sample user data with verification status
 const currentUser: User = {
@@ -144,9 +145,33 @@ const samplePosts = [
 ]
 
 export default function HomePage() {
-  const { t } = useLanguage()
+  const { t, selectedLanguage } = useLanguage()
   const [postContent, setPostContent] = useState("")
   const [activeTab, setActiveTab] = useState("for-you")
+
+  // Get translated posts based on selected language
+  const getTranslatedPosts = () => {
+    const lang = selectedLanguage.code
+    const translations = postTranslations[lang] || postTranslations.en
+
+    return samplePosts.map((post, index) => {
+      const postKey = `post${index + 1}` as keyof typeof translations
+      const translatedContent = translations[postKey] || post.content
+
+      return {
+        ...post,
+        content: translatedContent,
+        link: post.link
+          ? {
+              ...post.link,
+              title: translations[`${postKey}Link` as keyof typeof translations] || post.link.title,
+            }
+          : post.link,
+      }
+    })
+  }
+
+  const translatedPosts = getTranslatedPosts()
 
   const handlePostSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -253,7 +278,7 @@ export default function HomePage() {
 
               <TabsContent value="for-you" className="mt-4 space-y-6">
                 {/* Posts */}
-                {samplePosts.map((post) => (
+                {translatedPosts.map((post) => (
                   <Card key={post.id} className="border-none shadow-md card-hover select-none">
                     <CardHeader className="pb-3 select-none">
                       <div className="flex justify-between">

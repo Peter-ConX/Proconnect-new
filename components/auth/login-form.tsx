@@ -10,29 +10,84 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { PasswordChangeModal } from "@/components/auth/password-change-modal"
 
 export function LoginForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [showPasswordChange, setShowPasswordChange] = useState(false)
+  const [needsPasswordChange, setNeedsPasswordChange] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || "Invalid email or password")
+        setIsLoading(false)
+        return
+      }
+
+      // Check if password needs to be changed
+      if (data.user?.needsPasswordChange) {
+        setIsLoading(false)
+        setNeedsPasswordChange(true)
+        setShowPasswordChange(true)
+        return
+      }
+
+      // Store user session
+      localStorage.setItem("userEmail", email)
       setIsLoading(false)
       router.push("/home")
-    }, 1500)
+    } catch (err) {
+      setError("An error occurred. Please try again.")
+      setIsLoading(false)
+    }
+  }
+
+  const handlePasswordChanged = () => {
+    setShowPasswordChange(false)
+    setNeedsPasswordChange(false)
+    router.push("/home")
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" placeholder="name@example.com" required autoComplete="email" />
-      </div>
+    <>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="name@example.com"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
@@ -45,12 +100,14 @@ export function LoginForm() {
           </button>
         </div>
         <div className="relative">
-          <Input
+            <Input
             id="password"
             type={showPassword ? "text" : "password"}
             placeholder="••••••••"
             required
             autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
           <button
             type="button"
@@ -119,5 +176,14 @@ export function LoginForm() {
         </Button>
       </div>
     </form>
+
+    {showPasswordChange && (
+      <PasswordChangeModal
+        isOpen={showPasswordChange}
+        onClose={handlePasswordChanged}
+        email={email}
+      />
+    )}
+    </>
   )
 }

@@ -1,0 +1,68 @@
+// Post content translations
+export const postTranslations: Record<string, Record<string, string>> = {
+  en: {
+    post1: "Just finished a major redesign project for a fintech client. The key insight: simplifying the onboarding flow increased conversion by 34%. Always test your assumptions!",
+    post2: "🚀 Excited to announce our new sustainable energy initiative. Learn how we're working to reduce carbon emissions and create a cleaner future for all.",
+    post2Link: "Tesla Sustainable Energy Initiative",
+    post3: "🚀 Just published my new article on building performant React components. Check it out and let me know your thoughts!",
+    post3Link: "Advanced React Performance Optimization Techniques",
+    post4: "New guidelines on mental health in the workplace. Employers play a crucial role in supporting employee wellbeing. Read our comprehensive report.",
+  },
+  fr: {
+    post1: "Je viens de terminer un projet de refonte majeur pour un client fintech. L'idée clé : simplifier le processus d'onboarding a augmenté la conversion de 34%. Testez toujours vos hypothèses !",
+    post2: "🚀 Ravi d'annoncer notre nouvelle initiative d'énergie durable. Découvrez comment nous travaillons à réduire les émissions de carbone et à créer un avenir plus propre pour tous.",
+    post2Link: "Initiative d'énergie durable Tesla",
+    post3: "🚀 Je viens de publier mon nouvel article sur la création de composants React performants. Découvrez-le et dites-moi ce que vous en pensez !",
+    post3Link: "Techniques avancées d'optimisation des performances React",
+    post4: "Nouvelles directives sur la santé mentale au travail. Les employeurs jouent un rôle crucial dans le soutien au bien-être des employés. Lisez notre rapport complet.",
+  },
+  es: {
+    post1: "Acabo de terminar un proyecto de rediseño importante para un cliente fintech. La idea clave: simplificar el flujo de incorporación aumentó la conversión en un 34%. ¡Siempre prueba tus suposiciones!",
+    post2: "🚀 Emocionado de anunciar nuestra nueva iniciativa de energía sostenible. Descubre cómo estamos trabajando para reducir las emisiones de carbono y crear un futuro más limpio para todos.",
+    post2Link: "Iniciativa de Energía Sostenible de Tesla",
+    post3: "🚀 Acabo de publicar mi nuevo artículo sobre la construcción de componentes React de alto rendimiento. ¡Échale un vistazo y cuéntame qué piensas!",
+    post3Link: "Técnicas Avanzadas de Optimización de Rendimiento React",
+    post4: "Nuevas pautas sobre salud mental en el lugar de trabajo. Los empleadores juegan un papel crucial en el apoyo al bienestar de los empleados. Lee nuestro informe completo.",
+  },
+  de: {
+    post1: "Gerade ein großes Redesign-Projekt für einen Fintech-Kunden abgeschlossen. Die wichtigste Erkenntnis: Die Vereinfachung des Onboarding-Prozesses erhöhte die Conversion um 34%. Testen Sie immer Ihre Annahmen!",
+    post2: "🚀 Aufgeregt, unsere neue Initiative für nachhaltige Energie anzukündigen. Erfahren Sie, wie wir daran arbeiten, CO2-Emissionen zu reduzieren und eine sauberere Zukunft für alle zu schaffen.",
+    post2Link: "Tesla Initiative für nachhaltige Energie",
+    post3: "🚀 Gerade meinen neuen Artikel über den Aufbau performanter React-Komponenten veröffentlicht. Schauen Sie es sich an und lassen Sie mich wissen, was Sie denken!",
+    post3Link: "Fortgeschrittene React-Performance-Optimierungstechniken",
+    post4: "Neue Richtlinien zur psychischen Gesundheit am Arbeitsplatz. Arbeitgeber spielen eine entscheidende Rolle bei der Unterstützung des Wohlbefindens der Mitarbeiter. Lesen Sie unseren umfassenden Bericht.",
+  },
+  zh: {
+    post1: "刚刚完成了一个金融科技客户的主要重新设计项目。关键洞察：简化入职流程使转化率提高了34%。始终测试您的假设！",
+    post2: "🚀 很高兴宣布我们的新可持续能源计划。了解我们如何努力减少碳排放并为所有人创造更清洁的未来。",
+    post2Link: "特斯拉可持续能源计划",
+    post3: "🚀 刚刚发表了我的新文章，关于构建高性能React组件。查看一下，告诉我您的想法！",
+    post3Link: "高级React性能优化技术",
+    post4: "关于工作场所心理健康的新指南。雇主在支持员工福祉方面发挥着关键作用。阅读我们的综合报告。",
+  },
+  ja: {
+    post1: "フィンテッククライアント向けの主要な再設計プロジェクトを完了しました。重要な洞察：オンボーディングフローを簡素化することで、コンバージョンが34%増加しました。常に仮説をテストしてください！",
+    post2: "🚀 新しい持続可能なエネルギーイニシアチブを発表できることを嬉しく思います。カーボン排出量を削減し、すべての人にとってよりクリーンな未来を創造する方法をご覧ください。",
+    post2Link: "テスラ持続可能なエネルギーイニシアチブ",
+    post3: "🚀 高性能なReactコンポーネントの構築に関する新しい記事を公開しました。チェックして、あなたの考えを教えてください！",
+    post3Link: "高度なReactパフォーマンス最適化技術",
+    post4: "職場でのメンタルヘルスに関する新しいガイドライン。雇用主は従業員の幸福をサポートする上で重要な役割を果たします。包括的なレポートをお読みください。",
+  },
+  ko: {
+    post1: "핀테크 클라이언트를 위한 주요 재디자인 프로젝트를 완료했습니다. 핵심 통찰: 온보딩 프로세스를 단순화하여 전환율이 34% 증가했습니다. 항상 가정을 테스트하세요!",
+    post2: "🚀 새로운 지속 가능한 에너지 이니셔티브를 발표하게 되어 기쁩니다. 탄소 배출을 줄이고 모든 사람을 위한 더 깨끗한 미래를 만드는 방법을 알아보세요.",
+    post2Link: "테슬라 지속 가능한 에너지 이니셔티브",
+    post3: "🚀 고성능 React 컴포넌트 구축에 대한 새 기사를 발행했습니다. 확인해보시고 생각을 알려주세요!",
+    post3Link: "고급 React 성능 최적화 기술",
+    post4: "직장에서의 정신 건강에 대한 새로운 지침. 고용주는 직원 복지를 지원하는 데 중요한 역할을 합니다. 종합 보고서를 읽어보세요.",
+  },
+  pt: {
+    post1: "Acabei de concluir um grande projeto de redesign para um cliente fintech. A ideia principal: simplificar o fluxo de onboarding aumentou a conversão em 34%. Sempre teste suas suposições!",
+    post2: "🚀 Animado em anunciar nossa nova iniciativa de energia sustentável. Saiba como estamos trabalhando para reduzir as emissões de carbono e criar um futuro mais limpo para todos.",
+    post2Link: "Iniciativa de Energia Sustentável Tesla",
+    post3: "🚀 Acabei de publicar meu novo artigo sobre a construção de componentes React de alto desempenho. Confira e me diga o que você acha!",
+    post3Link: "Técnicas Avançadas de Otimização de Desempenho React",
+    post4: "Novas diretrizes sobre saúde mental no local de trabalho. Os empregadores desempenham um papel crucial no apoio ao bem-estar dos funcionários. Leia nosso relatório abrangente.",
+  },
+}
+

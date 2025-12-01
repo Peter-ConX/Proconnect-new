@@ -63,11 +63,11 @@ export function Navigation() {
   return (
     <>
       {/* Top Header with Logo and Mobile Menu Toggle */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-teal-500 to-amber-500 shadow-md h-16 flex items-center">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-sky-500 to-orange-500 shadow-md h-16 flex items-center">
         <div className="w-full flex items-center justify-between px-4 md:px-6">
           {/* Logo */}
           <Link href="/home" className="flex items-center flex-shrink-0">
-            <span className="text-2xl font-bold text-white dark:text-yellow-500">Proconnect</span>
+            <span className="text-2xl font-bold text-yellow-500">Proconnect</span>
           </Link>
 
           {/* Mobile Menu Button */}
@@ -84,7 +84,7 @@ export function Navigation() {
           <div className="hidden md:flex items-center gap-4">
             <ThemeToggle />
             <LanguageSelector />
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-8 w-8 border-2 border-white">
               <AvatarImage src="/images/profile-picture.jpeg" alt="@user" />
               <AvatarFallback className="bg-white text-orange-500">OC</AvatarFallback>
             </Avatar>

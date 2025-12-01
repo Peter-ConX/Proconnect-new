@@ -22,10 +22,10 @@ export function LanguageSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 bg-transparent">
+        <Button variant="outline" size="sm" className="gap-2 bg-transparent border-black/20 text-white hover:bg-white/10">
           <Globe className="h-4 w-4" />
           <span className="hidden sm:inline">
-            {selectedLanguage.flag} {selectedLanguage.name}
+            {selectedLanguage.code === "en" ? "us" : selectedLanguage.code} {selectedLanguage.name}
           </span>
           <span className="sm:hidden">{selectedLanguage.flag}</span>
         </Button>

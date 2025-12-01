@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-
-// Mock user storage - in production, use Supabase
-const users: Map<string, { email: string; password: string; needsPasswordChange: boolean }> = new Map()
+import { getUser } from "@/lib/user-storage"
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +10,7 @@ export async function POST(request: NextRequest) {
     }
 
     // In production, fetch from Supabase and verify password hash
-    const user = users.get(email.toLowerCase())
+    const user = getUser(email)
 
     if (!user) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })

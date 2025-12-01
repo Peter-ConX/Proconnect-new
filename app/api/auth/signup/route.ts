@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { generateStrongPassword } from "@/lib/password-generator"
-
-// In production, you would use Supabase or another service
-// This is a mock implementation
-const users: Map<string, { email: string; password: string; needsPasswordChange: boolean }> = new Map()
+import { createUser, getUser } from "@/lib/user-storage"
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    if (users.has(email.toLowerCase())) {
+    if (getUser(email)) {
       return NextResponse.json({ error: "User with this email already exists" }, { status: 400 })
     }
 
@@ -22,11 +19,7 @@ export async function POST(request: NextRequest) {
     const generatedPassword = generateStrongPassword(16)
 
     // Store user (in production, use Supabase)
-    users.set(email.toLowerCase(), {
-      email: email.toLowerCase(),
-      password: generatedPassword, // In production, hash this!
-      needsPasswordChange: true,
-    })
+    createUser(email, generatedPassword)
 
     // Send password via email
     // In production, use a service like Resend, SendGrid, or Nodemailer

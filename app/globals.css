@@ -10,9 +10,9 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 199 89% 48%;
+    --primary: 180 70% 45%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 32 98% 52%;
+    --secondary: 45 100% 51%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -22,30 +22,30 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 199 89% 48%;
+    --ring: 180 70% 45%;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222 14% 8%;
-    --foreground: 0 0% 95%;
-    --card: 222 14% 12%;
-    --card-foreground: 0 0% 95%;
-    --popover: 222 14% 8%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 199 100% 35%;
-    --primary-foreground: 0 0% 95%;
-    --secondary: 32 98% 52%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 222 14% 25%;
-    --muted-foreground: 0 0% 75%;
-    --accent: 222 14% 25%;
-    --accent-foreground: 32 98% 52%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 3%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 180 70% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 45 100% 51%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 8%;
+    --muted-foreground: 0 0% 70%;
+    --accent: 0 0% 8%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 95%;
-    --border: 222 14% 20%;
-    --input: 222 14% 18%;
-    --ring: 32 98% 52%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 180 70% 45%;
   }
 
   .custom {
@@ -86,10 +86,10 @@
     -o-user-drag: none;
   }
   .select-none {
-    user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    user-select: none;
   }
 }
 
@@ -223,5 +223,35 @@
   100% {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+.theme-transition-overlay {
+  clip-path: circle(0% at 50% 50%);
+  animation: themeTransition 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.theme-transition-dark {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.theme-transition-light {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes themeTransition {
+  0% {
+    clip-path: circle(0% at 50% 50%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.5;
+  }
+  60% {
+    opacity: 0.3;
+  }
+  100% {
+    clip-path: circle(150% at 50% 50%);
+    opacity: 0;
   }
 }

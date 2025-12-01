@@ -4,83 +4,118 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { Loader2, Mail, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function SignupForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState("")
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
+    setSuccess(false)
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || "Failed to create account")
+        setIsLoading(false)
+        return
+      }
+
+      setSuccess(true)
       setIsLoading(false)
-      router.push("/home")
-    }, 1500)
+
+      // Redirect to login after 3 seconds
+      setTimeout(() => {
+        router.push("/auth?login=true")
+      }, 3000)
+    } catch (err) {
+      setError("An error occurred. Please try again.")
+      setIsLoading(false)
+    }
+  }
+
+  if (success) {
+    return (
+      <div className="space-y-4">
+        <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20">
+          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+          <AlertDescription className="text-green-800 dark:text-green-200">
+            <p className="font-semibold mb-2">Account created successfully!</p>
+            <p className="text-sm">
+              A password has been sent to <strong>{email}</strong>. Please check your email and use that password to log
+              in.
+            </p>
+            <p className="text-sm mt-2">You will be redirected to the login page shortly...</p>
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="firstName">First name</Label>
-          <Input id="firstName" placeholder="John" required autoComplete="given-name" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="lastName">Last name</Label>
-          <Input id="lastName" placeholder="Doe" required autoComplete="family-name" />
-        </div>
-      </div>
-
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" placeholder="name@example.com" required autoComplete="email" />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="email">Email Address</Label>
         <div className="relative">
+          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            id="password"
-            type={showPassword ? "text" : "password"}
-            placeholder="••••••••"
+            id="email"
+            type="email"
+            placeholder="name@example.com"
             required
-            autoComplete="new-password"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="pl-10"
           />
-          <button
-            type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-          </button>
         </div>
-        <p className="text-xs text-muted-foreground">Must be at least 8 characters and include a number and a symbol</p>
+        <p className="text-xs text-muted-foreground">
+          We'll send a secure password to your email address. You'll be asked to change it after logging in.
+        </p>
       </div>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       <div className="flex items-start space-x-2">
         <Checkbox id="terms" className="mt-1" required />
         <Label htmlFor="terms" className="text-sm font-normal">
           I agree to the{" "}
-          <a href="/terms" className="text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">
+          <a href="/terms" className="text-primary hover:underline">
             Terms of Service
           </a>{" "}
           and{" "}
-          <a href="/privacy" className="text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">
+          <a href="/privacy" className="text-primary hover:underline">
             Privacy Policy
           </a>
         </Label>
       </div>
 
-      <Button type="submit" className="w-full bg-sky-600 hover:bg-sky-700" disabled={isLoading}>
+      <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

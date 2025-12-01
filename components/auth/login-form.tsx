@@ -54,7 +54,8 @@ export function LoginForm() {
       // Store user session
       localStorage.setItem("userEmail", email)
       setIsLoading(false)
-      router.push("/home")
+      // Trigger navigation refresh by reloading
+      window.location.href = "/home"
     } catch (err) {
       setError("An error occurred. Please try again.")
       setIsLoading(false)

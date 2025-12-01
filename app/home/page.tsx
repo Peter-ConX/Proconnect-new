@@ -148,13 +148,14 @@ export default function HomePage() {
   const { t, selectedLanguage } = useLanguage()
   const [postContent, setPostContent] = useState("")
   const [activeTab, setActiveTab] = useState("for-you")
+  const [userPosts, setUserPosts] = useState<any[]>([])
 
   // Get translated posts based on selected language
   const getTranslatedPosts = () => {
     const lang = selectedLanguage.code
     const translations = postTranslations[lang] || postTranslations.en
 
-    return samplePosts.map((post, index) => {
+    const translatedSamplePosts = samplePosts.map((post, index) => {
       const postKey = `post${index + 1}` as keyof typeof translations
       const translatedContent = translations[postKey] || post.content
 
@@ -169,16 +170,40 @@ export default function HomePage() {
           : post.link,
       }
     })
+
+    // Combine user posts with sample posts, user posts first
+    return [...userPosts, ...translatedSamplePosts]
   }
 
   const translatedPosts = getTranslatedPosts()
 
   const handlePostSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, this would send the post to the server
-    console.log("Posting:", postContent)
+    if (!postContent.trim()) return
+
+    // Create new post
+    const newPost = {
+      id: Date.now(),
+      author: {
+        id: currentUser.id,
+        name: currentUser.name,
+        handle: currentUser.handle,
+        avatar: currentUser.avatar,
+        role: currentUser.role,
+        isPremium: currentUser.isPremium,
+      },
+      content: postContent,
+      time: "Just now",
+      likes: 0,
+      comments: 0,
+      shares: 0,
+      isLiked: false,
+      isBookmarked: false,
+    }
+
+    // Add to user posts
+    setUserPosts((prev) => [newPost, ...prev])
     setPostContent("")
-    // You could add the new post to a local state array to show it immediately
   }
 
   return (

@@ -21,8 +21,18 @@ interface CourseCardProps {
 }
 
 export function CourseCard({ course, onStartClick }: CourseCardProps) {
-  const handleStartCourse = () => {
+  const handleStartCourse = async () => {
     // Track the user starting the course
+    try {
+      await fetch("/api/courses/track-start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseId: course.id, courseUrl: course.courseUrl }),
+      })
+    } catch (error) {
+      console.error("Failed to track course start:", error)
+    }
+
     if (onStartClick) {
       onStartClick(course.id, course.courseUrl)
     } else {
@@ -33,13 +43,13 @@ export function CourseCard({ course, onStartClick }: CourseCardProps) {
 
   return (
     <Card className="border-none shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-      <div className="h-40 bg-gradient-to-br from-sky-400 to-blue-600 relative overflow-hidden">
+      <div className="h-40 bg-gradient-to-br from-teal-400 to-teal-600 relative overflow-hidden">
         <img
           src={course.thumbnailUrl || "/placeholder.svg?height=160&width=300&text=Course"}
           alt={course.courseTitle}
           className="w-full h-full object-cover opacity-80"
         />
-        <Badge className="absolute top-3 right-3 bg-orange-500 text-white">{course.courseProvider}</Badge>
+        <Badge className="absolute top-3 right-3 bg-amber-500 text-white">{course.courseProvider}</Badge>
       </div>
 
       <CardHeader>
@@ -53,7 +63,7 @@ export function CourseCard({ course, onStartClick }: CourseCardProps) {
           <p className="text-sm font-medium mb-2">Skills Covered</p>
           <div className="flex flex-wrap gap-2">
             {course.skillsCovered.slice(0, 3).map((skill) => (
-              <Badge key={skill} variant="outline" className="text-xs border-sky-300 text-sky-600">
+              <Badge key={skill} variant="outline" className="text-xs border-teal-300 text-teal-600 dark:border-teal-700 dark:text-teal-400">
                 {skill}
               </Badge>
             ))}
@@ -80,7 +90,7 @@ export function CourseCard({ course, onStartClick }: CourseCardProps) {
         {/* CTA Button */}
         <Button
           onClick={handleStartCourse}
-          className="w-full bg-gradient-to-r from-sky-500 to-orange-500 hover:from-sky-600 hover:to-orange-600 text-white font-semibold"
+          className="w-full bg-gradient-to-r from-teal-500 to-amber-500 hover:from-teal-600 hover:to-amber-600 text-white font-semibold"
         >
           <ExternalLink className="h-4 w-4 mr-2" />
           Start Assessment

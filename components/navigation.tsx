@@ -119,7 +119,7 @@ export function Navigation() {
                       flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all
                       ${
                         isActive
-                          ? "bg-gradient-to-r from-sky-50 to-orange-50 text-orange-600 border-l-4 border-orange-500"
+                          ? "bg-gradient-to-r from-teal-50 to-amber-50 text-amber-600 border-l-4 border-amber-500"
                           : "text-foreground hover:bg-muted"
                       }
                     `}
@@ -151,7 +151,7 @@ export function Navigation() {
                       flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all
                       ${
                         isActive
-                          ? "bg-gradient-to-r from-sky-50 to-orange-50 text-orange-600 border-l-4 border-orange-500"
+                          ? "bg-gradient-to-r from-teal-50 to-amber-50 text-amber-600 border-l-4 border-amber-500"
                           : "text-foreground hover:bg-muted"
                       }
                     `}

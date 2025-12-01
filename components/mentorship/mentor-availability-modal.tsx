@@ -14,6 +14,7 @@ interface MentorAvailabilityModalProps {
   isOpen: boolean
   onClose: () => void
   mentor: {
+    id?: string
     name: string
     title: string
     topic: string
@@ -41,12 +42,33 @@ export function MentorAvailabilityModal({ isOpen, onClose, mentor }: MentorAvail
     e.preventDefault()
     setIsRegistering(true)
 
-    // Simulate registration
-    setTimeout(() => {
+    try {
+      // Store mentee data
+      const response = await fetch("/api/mentorship/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mentorId: mentor.id || "1",
+          email: formData.email,
+          name: formData.name,
+          experience: formData.experience,
+        }),
+      })
+
+      if (response.ok) {
+        setIsRegistering(false)
+        // Show success and redirect
+        setTimeout(() => {
+          onClose()
+          window.location.href = `/mentorship/${mentor.id || "1"}/chat`
+        }, 1500)
+      } else {
+        setIsRegistering(false)
+      }
+    } catch (error) {
+      console.error("Registration error:", error)
       setIsRegistering(false)
-      onClose()
-      // Show success message
-    }, 2000)
+    }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,10 +82,11 @@ export function MentorAvailabilityModal({ isOpen, onClose, mentor }: MentorAvail
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         {/* Header with Proconnect Logo */}
-        <div className="relative bg-gradient-to-r from-sky-500 to-orange-500 p-6 rounded-t-2xl">
+        <div className="relative bg-gradient-to-r from-teal-500 to-amber-500 p-6 rounded-t-2xl">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+            aria-label="Close modal"
           >
             <X className="h-5 w-5" />
           </button>
@@ -88,31 +111,31 @@ export function MentorAvailabilityModal({ isOpen, onClose, mentor }: MentorAvail
 
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                <Calendar className="h-4 w-4 text-sky-500" />
+                <Calendar className="h-4 w-4 text-teal-500" />
                 <span className="text-sm">{mentor.date}</span>
               </div>
 
               <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                <Clock className="h-4 w-4 text-sky-500" />
+                <Clock className="h-4 w-4 text-teal-500" />
                 <span className="text-sm">
                   {mentor.time} ({mentor.timezone})
                 </span>
               </div>
 
               <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                <MapPin className="h-4 w-4 text-sky-500" />
+                <MapPin className="h-4 w-4 text-teal-500" />
                 <span className="text-sm">{mentor.location}</span>
               </div>
 
               <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                <Users className="h-4 w-4 text-sky-500" />
+                <Users className="h-4 w-4 text-teal-500" />
                 <span className="text-sm">
                   {mentor.registered}/{mentor.capacity} registered
                 </span>
               </div>
             </div>
 
-            <button className="text-sky-500 hover:text-sky-600 text-sm mt-2 transition-colors">
+            <button className="text-teal-500 hover:text-teal-600 text-sm mt-2 transition-colors">
               Convert to other timezone
             </button>
           </div>
@@ -181,7 +204,7 @@ export function MentorAvailabilityModal({ isOpen, onClose, mentor }: MentorAvail
             <Button
               type="submit"
               disabled={isRegistering}
-              className="w-full bg-gradient-to-r from-sky-500 to-orange-500 hover:from-sky-600 hover:to-orange-600 text-white font-semibold py-3 rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
+              className="w-full bg-gradient-to-r from-teal-500 to-amber-500 hover:from-teal-600 hover:to-amber-600 text-white font-semibold py-3 rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
             >
               {isRegistering ? (
                 <div className="flex items-center gap-2">
@@ -203,7 +226,7 @@ export function MentorAvailabilityModal({ isOpen, onClose, mentor }: MentorAvail
           <div className="flex justify-center mt-4">
             <Badge
               variant="outline"
-              className="border-orange-200 text-orange-600 dark:border-orange-800 dark:text-orange-400"
+              className="border-amber-200 text-amber-600 dark:border-amber-800 dark:text-amber-400"
             >
               {mentor.capacity - mentor.registered} spots remaining
             </Badge>

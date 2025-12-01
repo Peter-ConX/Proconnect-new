@@ -39,6 +39,43 @@ const profileData = {
     connections: 1248,
     missions: 18,
   },
+  workHistory: [
+    {
+      company: "Proconnect",
+      position: "Founder & CEO",
+      startDate: "2022",
+      endDate: "Present",
+      description: "Leading product strategy and business development",
+    },
+    {
+      company: "TechStart Inc.",
+      position: "Senior Product Manager",
+      startDate: "2020",
+      endDate: "2022",
+      description: "Managed product roadmap and cross-functional teams",
+    },
+  ],
+  education: [
+    {
+      institution: "Stanford University",
+      degree: "BS in Computer Science",
+      year: "2018",
+    },
+  ],
+  certifications: [
+    {
+      name: "Certified Product Manager",
+      issuer: "Product Management Institute",
+      year: "2021",
+      verified: true,
+    },
+    {
+      name: "UX Design Certification",
+      issuer: "Google",
+      year: "2020",
+      verified: true,
+    },
+  ],
   socialLinks: {
     github: "github.com/okaforchidera",
     linkedin: "linkedin.com/in/okaforchidera",
@@ -358,6 +395,10 @@ export default function ProfilePage() {
               <Lightbulb className="mr-2 h-4 w-4" />
               Mentorships
             </TabsTrigger>
+            <TabsTrigger value="experience" className="flex-1">
+              <Briefcase className="mr-2 h-4 w-4" />
+              Experience
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="showcase" className="mt-6">
@@ -542,6 +583,66 @@ export default function ProfilePage() {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="experience" className="mt-6 space-y-6">
+            {/* Work History */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Work History</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {profileData.workHistory?.map((job: any, index: number) => (
+                  <div key={index} className="border-l-4 border-teal-500 pl-4 py-2">
+                    <h4 className="font-semibold text-lg">{job.position}</h4>
+                    <p className="text-teal-600 dark:text-teal-400 font-medium">{job.company}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {job.startDate} - {job.endDate}
+                    </p>
+                    <p className="text-sm mt-2">{job.description}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Education */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Education</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {profileData.education?.map((edu: any, index: number) => (
+                  <div key={index} className="border-l-4 border-amber-500 pl-4 py-2">
+                    <h4 className="font-semibold text-lg">{edu.degree}</h4>
+                    <p className="text-amber-600 dark:text-amber-400 font-medium">{edu.institution}</p>
+                    <p className="text-sm text-muted-foreground">{edu.year}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Certifications */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Certifications</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {profileData.certifications?.map((cert: any, index: number) => (
+                  <div key={index} className="flex items-start justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-semibold">{cert.name}</h4>
+                      <p className="text-sm text-muted-foreground">{cert.issuer}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{cert.year}</p>
+                    </div>
+                    {cert.verified && (
+                      <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                        Verified
+                      </Badge>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Users, Clock, CheckCircle, AlertCircle, MoreHorizontal, Filter } from "lucide-react"
+import { Users, Clock, CheckCircle, AlertCircle, MoreHorizontal, Filter } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
+import { CreateProjectModal } from "@/components/modals/create-project-modal"
 
 // Mock project data
 const projects = [
@@ -114,6 +115,11 @@ const recentActivity = [
 export default function ProjectsPage() {
   const [activeTab, setActiveTab] = useState("overview")
   const [searchQuery, setSearchQuery] = useState("")
+  const [projectsList, setProjectsList] = useState(projects)
+
+  const handleNewProject = (newProject: any) => {
+    setProjectsList([newProject, ...projectsList])
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -147,12 +153,11 @@ export default function ProjectsPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold">Project Management</h1>
-            <p className="text-gray-500 mt-1">Manage your collaborative projects and track progress</p>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              Manage your collaborative projects and track progress
+            </p>
           </div>
-          <Button className="mt-4 md:mt-0 bg-sky-500 hover:bg-sky-600 text-white">
-            <Plus className="mr-2 h-4 w-4" />
-            New Project
-          </Button>
+          <CreateProjectModal onProjectCreate={handleNewProject} />
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6" onValueChange={setActiveTab}>
@@ -255,7 +260,7 @@ export default function ProjectsPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {projects.map((project) => (
+              {projectsList.map((project) => (
                 <Card key={project.id} className="border-none shadow-md">
                   <CardHeader>
                     <div className="flex justify-between items-start">

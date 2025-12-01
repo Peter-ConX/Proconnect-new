@@ -19,6 +19,7 @@ import {
   Inbox,
   FolderOpen,
   TrendingUp,
+  Settings,
 } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -36,6 +37,7 @@ const mainNavItems: Array<{ nameKey: TranslationKey; href: string; icon: any; gr
   { nameKey: "nav.messages", href: "/messages", icon: MessageSquare, group: "Main" },
   { nameKey: "nav.news", href: "/news", icon: Newspaper, group: "Main" },
   { nameKey: "nav.profile", href: "/profile", icon: User, group: "Main" },
+  { nameKey: "nav.settings", href: "/settings", icon: Settings, group: "Main" },
 ]
 
 // Feature navigation items structure (translation keys will be used for names)
@@ -133,7 +135,9 @@ export function Navigation() {
           {/* Features Section */}
           <div>
             <div className="px-4 mb-3">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("nav.features")}</h3>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                {t("nav.features")}
+              </h3>
             </div>
             <div className="space-y-1 px-2">
               {featureNavItems.map((item) => {

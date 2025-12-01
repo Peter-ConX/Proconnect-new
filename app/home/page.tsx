@@ -162,7 +162,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Sidebar - Profile Card */}
           <div className="hidden lg:block">
-            <Card className="border-none shadow-lg sticky top-24">
+            <Card className="border-none shadow-lg sticky top-24 card-hover">
               <CardHeader className="flex flex-col items-center pb-2">
                 <Avatar className="w-20 h-20 border-4 border-white shadow-sm">
                   <AvatarImage src="/images/profile-picture.jpeg" alt="@user" />
@@ -193,7 +193,7 @@ export default function HomePage() {
               </CardContent>
               <Separator />
               <CardFooter className="flex justify-center p-4">
-                <Button variant="outline" className="w-full" asChild>
+                <Button variant="outline" className="w-full interactive bg-transparent" asChild>
                   <Link href="/profile">{t("home.viewProfile")}</Link>
                 </Button>
               </CardFooter>
@@ -212,7 +212,7 @@ export default function HomePage() {
                   </Avatar>
                   <Textarea
                     placeholder={t("home.sharePlaceholder")}
-                    className="flex-1 resize-none focus-visible:ring-sky-500"
+                    className="flex-1 resize-none focus-visible:ring-sky-500 interactive"
                     value={postContent}
                     onChange={(e) => setPostContent(e.target.value)}
                   />
@@ -220,21 +220,21 @@ export default function HomePage() {
               </CardHeader>
               <CardFooter className="flex justify-between">
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="icon" className="text-gray-500 hover:text-sky-500">
+                  <Button variant="ghost" size="icon" className="text-gray-500 hover:text-sky-500 interactive">
                     <ImageIcon className="w-5 h-5" />
                     <span className="sr-only">{t("home.addImage")}</span>
                   </Button>
-                  <Button variant="ghost" size="icon" className="text-gray-500 hover:text-sky-500">
+                  <Button variant="ghost" size="icon" className="text-gray-500 hover:text-sky-500 interactive">
                     <LinkIcon className="w-5 h-5" />
                     <span className="sr-only">{t("home.addLink")}</span>
                   </Button>
-                  <Button variant="ghost" size="icon" className="text-gray-500 hover:text-sky-500">
+                  <Button variant="ghost" size="icon" className="text-gray-500 hover:text-sky-500 interactive">
                     <Smile className="w-5 h-5" />
                     <span className="sr-only">{t("home.addEmoji")}</span>
                   </Button>
                 </div>
                 <Button
-                  className="bg-sky-500 hover:bg-sky-600 text-white"
+                  className="interactive bg-sky-500 hover:bg-sky-600 text-white"
                   onClick={handlePostSubmit}
                   disabled={!postContent.trim()}
                 >
@@ -254,12 +254,16 @@ export default function HomePage() {
               <TabsContent value="for-you" className="mt-4 space-y-6">
                 {/* Posts */}
                 {samplePosts.map((post) => (
-                  <Card key={post.id} className="border-none shadow-md hover:shadow-lg transition-shadow select-none">
+                  <Card key={post.id} className="border-none shadow-md card-hover select-none">
                     <CardHeader className="pb-3 select-none">
                       <div className="flex justify-between">
                         <div className="flex items-start gap-3">
                           <Avatar className="border select-none">
-                            <AvatarImage src={post.author.avatar || "/placeholder.svg"} alt={post.author.name} draggable={false} />
+                            <AvatarImage
+                              src={post.author.avatar || "/placeholder.svg"}
+                              alt={post.author.name}
+                              draggable={false}
+                            />
                             <AvatarFallback className="bg-sky-700 text-white">
                               {post.author.name.charAt(0)}
                             </AvatarFallback>
@@ -268,15 +272,21 @@ export default function HomePage() {
                             <div className="flex items-center gap-1">
                               <p className="font-medium select-none">{post.author.name}</p>
                               <VerifiedBadge type={getVerificationType(post.author)} />
-                              <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">{post.author.handle}</p>
-                              <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">• {post.time}</p>
+                              <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
+                                {post.author.handle}
+                              </p>
+                              <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
+                                • {post.time}
+                              </p>
                             </div>
-                            <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">{post.author.role}</p>
+                            <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
+                              {post.author.role}
+                            </p>
                           </div>
                         </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-gray-500">
+                            <Button variant="ghost" size="icon" className="text-gray-500 interactive">
                               <MoreHorizontal className="w-5 h-5" />
                               <span className="sr-only">{t("home.moreOptions")}</span>
                             </Button>
@@ -302,11 +312,16 @@ export default function HomePage() {
                       <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">{post.content}</p>
                       {post.image && (
                         <div className="mt-3 rounded-lg overflow-hidden">
-                          <img src={post.image || "/placeholder.svg"} alt="Post attachment" className="w-full h-auto select-none" draggable={false} />
+                          <img
+                            src={post.image || "/placeholder.svg"}
+                            alt="Post attachment"
+                            className="w-full h-auto select-none"
+                            draggable={false}
+                          />
                         </div>
                       )}
                       {post.link && (
-                        <div className="mt-3 border rounded-lg overflow-hidden">
+                        <div className="mt-3 border rounded-lg overflow-hidden interactive">
                           <div className="flex flex-col md:flex-row">
                             <div className="md:w-1/3 h-40 md:h-auto bg-muted dark:bg-muted">
                               <img
@@ -320,7 +335,7 @@ export default function HomePage() {
                               <h3 className="font-medium">{post.link.title}</h3>
                               <a
                                 href={post.link.url}
-                                className="text-sm text-sky-600 dark:text-sky-400 hover:underline mt-2 inline-block"
+                                className="text-sm text-sky-600 dark:text-sky-400 hover:underline mt-2 inline-block interactive"
                               >
                                 {t("home.readArticle")}
                               </a>
@@ -334,34 +349,42 @@ export default function HomePage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className={`gap-1 ${
+                          className={`gap-1 interactive ${
                             post.isLiked ? "text-sky-600 dark:text-sky-400" : "text-gray-600 dark:text-gray-300"
                           }`}
                         >
                           <ThumbsUp className="w-4 h-4" />
                           <span>{post.likes}</span>
                         </Button>
-                        <Button variant="ghost" size="sm" className="gap-1 text-gray-600 dark:text-gray-300">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="gap-1 text-gray-600 dark:text-gray-300 interactive"
+                        >
                           <MessageSquare className="w-4 h-4" />
                           <span>{post.comments}</span>
                         </Button>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="ghost" size="sm" className="gap-1 text-gray-600 dark:text-gray-300">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="gap-1 text-gray-600 dark:text-gray-300 interactive"
+                        >
                           <Repeat className="w-4 h-4" />
                           <span>{post.shares}</span>
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className={`${
+                          className={`interactive ${
                             post.isBookmarked ? "text-sky-600 dark:text-sky-400" : "text-gray-600 dark:text-gray-300"
                           }`}
                         >
                           <Bookmark className="w-4 h-4" />
                           <span className="sr-only">{t("home.bookmark")}</span>
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-gray-600 dark:text-gray-300">
+                        <Button variant="ghost" size="icon" className="text-gray-600 dark:text-gray-300 interactive">
                           <Share2 className="w-4 h-4" />
                           <span className="sr-only">{t("home.share")}</span>
                         </Button>
@@ -378,7 +401,11 @@ export default function HomePage() {
                     <div className="flex justify-between">
                       <div className="flex items-start gap-3">
                         <Avatar className="border select-none">
-                          <AvatarImage src="/placeholder.svg?height=40&width=40&text=EC" alt="Emma Clark" draggable={false} />
+                          <AvatarImage
+                            src="/placeholder.svg?height=40&width=40&text=EC"
+                            alt="Emma Clark"
+                            draggable={false}
+                          />
                           <AvatarFallback className="bg-sky-700 text-white">EC</AvatarFallback>
                         </Avatar>
                         <div className="select-none">
@@ -386,9 +413,13 @@ export default function HomePage() {
                             <p className="font-medium select-none">Emma Clark</p>
                             <VerifiedBadge type="high-profile" />
                             <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">@emmaclark</p>
-                            <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">• 3 hours ago</p>
+                            <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
+                              • 3 hours ago
+                            </p>
                           </div>
-                          <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">Product Designer at CreativeStudio</p>
+                          <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
+                            Product Designer at CreativeStudio
+                          </p>
                         </div>
                       </div>
                       <Button variant="ghost" size="icon" className="text-gray-500">
@@ -463,7 +494,9 @@ export default function HomePage() {
                             <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">@cbn</p>
                             <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">• 1 day ago</p>
                           </div>
-                          <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">Nigeria's Central Banking Authority</p>
+                          <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
+                            Nigeria's Central Banking Authority
+                          </p>
                         </div>
                       </div>
                       <Badge className="bg-orange-500 text-white flex items-center gap-1">
@@ -517,7 +550,7 @@ export default function HomePage() {
             </Tabs>
 
             <div className="flex justify-center mt-8">
-              <Button variant="outline" size="lg" className="gap-1">
+              <Button variant="outline" size="lg" className="gap-1 bg-transparent">
                 {t("home.loadMore")}
               </Button>
             </div>
@@ -552,7 +585,9 @@ export default function HomePage() {
                     <div key={index} className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-sky-600 dark:text-sky-400">{topic.tag}</p>
-                        <p className="text-xs text-gray-500">{topic.posts} {t("home.postsCount")}</p>
+                        <p className="text-xs text-gray-500">
+                          {topic.posts} {t("home.postsCount")}
+                        </p>
                       </div>
                       <Button variant="ghost" size="sm">
                         {t("home.follow")}
@@ -668,7 +703,7 @@ export default function HomePage() {
                         <MapPin className="w-3 h-3" />
                         <span>{event.location}</span>
                       </div>
-                      <Button size="sm" variant="outline" className="w-full mt-3">
+                      <Button size="sm" variant="outline" className="w-full mt-3 bg-transparent">
                         {t("home.interested")}
                       </Button>
                     </div>

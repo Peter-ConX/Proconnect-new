@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { Separator } from "@/components/ui/separator"
+import { AvatarUploadModal } from "@/components/modals/avatar-upload-modal"
 
 // Mock data for the profile
 const profileData = {
@@ -193,6 +193,15 @@ const mentorships = [
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("showcase")
+  const [profileImage, setProfileImage] = useState("/images/profile-picture.jpeg")
+
+  const handleAvatarUpload = async (file: File) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setProfileImage(e.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
 
   return (
     <div className="pt-20 pb-16">
@@ -210,10 +219,19 @@ export default function ProfilePage() {
             </Button>
           </div>
           <div className="px-6 pb-6 relative">
-            <Avatar className="absolute -top-16 left-6 w-32 h-32 border-4 border-white dark:border-gray-800 shadow-md">
-              <AvatarImage src="/images/profile-picture.jpeg" alt={profileData.name} />
-              <AvatarFallback className="bg-sky-700 text-white text-2xl">OC</AvatarFallback>
-            </Avatar>
+            <div className="absolute -top-16 left-6">
+              <div className="relative w-32 h-32 group">
+                <Avatar className="w-full h-full border-4 border-white dark:border-gray-800 shadow-md">
+                  <AvatarImage src={profileImage || "/placeholder.svg"} alt={profileData.name} />
+                  <AvatarFallback className="bg-sky-700 text-white text-2xl">OC</AvatarFallback>
+                </Avatar>
+                <AvatarUploadModal currentImage={profileImage} onUpload={handleAvatarUpload}>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <Edit className="h-5 w-5 text-white" />
+                  </div>
+                </AvatarUploadModal>
+              </div>
+            </div>
 
             <div className="ml-36 pt-4 md:flex md:justify-between md:items-start">
               <div>
@@ -505,29 +523,22 @@ export default function ProfilePage() {
                       </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pb-2">
                     <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-500">Focus Area:</span>
-                        <span className="text-sm font-medium">{mentorship.focus}</span>
+                      <div>
+                        <span className="text-sm text-gray-500">Focus:</span>
+                        <p className="font-medium">{mentorship.focus}</p>
                       </div>
-                      <Separator />
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-500">Started:</span>
-                        <span className="text-sm">{mentorship.startDate}</span>
-                      </div>
-                      <div className="flex justify-between">
+                      <div>
                         <span className="text-sm text-gray-500">Duration:</span>
-                        <span className="text-sm">{mentorship.duration}</span>
+                        <p className="font-medium">{mentorship.duration}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-gray-500">Started:</span>
+                        <p className="font-medium">{mentorship.startDate}</p>
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" className="w-full">
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      Message
-                    </Button>
-                  </CardFooter>
                 </Card>
               ))}
             </div>

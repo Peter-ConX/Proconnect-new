@@ -445,4 +445,3 @@ export const translations: Record<string, Translations> = {
     "home.interested": "Interessado",
   },
 }
-

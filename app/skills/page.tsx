@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { CourseCard } from "@/components/courses/course-card"
 
 // Mock skill assessment data
 const skillAssessments = [
@@ -114,8 +115,66 @@ const skillRecommendations = [
   },
 ]
 
+const freeCourses = [
+  {
+    id: "course-1",
+    courseTitle: "React Basics",
+    courseDescription: "Learn React fundamentals with real-world projects",
+    courseUrl: "https://www.coursera.org/learn/react",
+    courseLevel: "beginner",
+    durationHours: 30,
+    courseProvider: "Coursera",
+    skillsCovered: ["React", "JavaScript", "Web Development"],
+    thumbnailUrl: "/placeholder.svg?height=160&width=300&text=React+Course",
+  },
+  {
+    id: "course-2",
+    courseTitle: "Python for Data Science",
+    courseDescription: "Master Python programming for data analysis",
+    courseUrl: "https://www.edx.org/course/python-data-science",
+    courseLevel: "intermediate",
+    durationHours: 40,
+    courseProvider: "edX",
+    skillsCovered: ["Python", "Data Science", "Machine Learning"],
+    thumbnailUrl: "/placeholder.svg?height=160&width=300&text=Python+Course",
+  },
+  {
+    id: "course-3",
+    courseTitle: "Full-Stack Web Development",
+    courseDescription: "Build modern web applications end-to-end",
+    courseUrl: "https://www.udemy.com/course/fullstack",
+    courseLevel: "intermediate",
+    durationHours: 50,
+    courseProvider: "Udemy",
+    skillsCovered: ["JavaScript", "Node.js", "React", "MongoDB"],
+    thumbnailUrl: "/placeholder.svg?height=160&width=300&text=FullStack+Course",
+  },
+  {
+    id: "course-4",
+    courseTitle: "UI/UX Design Fundamentals",
+    courseDescription: "Master design principles and Figma",
+    courseUrl: "https://www.freecodecamp.org/ux-design",
+    courseLevel: "beginner",
+    durationHours: 35,
+    courseProvider: "freeCodeCamp",
+    skillsCovered: ["UI Design", "UX Design", "Figma"],
+    thumbnailUrl: "/placeholder.svg?height=160&width=300&text=UI+UX+Course",
+  },
+]
+
 export default function SkillsPage() {
   const [activeTab, setActiveTab] = useState("assessments")
+  const [courseTracking, setCourseTracking] = useState<Record<string, boolean>>({})
+
+  const handleStartCourse = (courseId: string, courseUrl: string) => {
+    // Track that user started the course
+    setCourseTracking((prev) => ({
+      ...prev,
+      [courseId]: true,
+    }))
+    // Open course in new window
+    window.open(courseUrl, "_blank")
+  }
 
   return (
     <div className="pt-20 pb-16">
@@ -132,8 +191,9 @@ export default function SkillsPage() {
         </div>
 
         <Tabs defaultValue="assessments" className="space-y-6" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="assessments">Available Tests</TabsTrigger>
+            <TabsTrigger value="courses">Free Courses</TabsTrigger>
             <TabsTrigger value="completed">My Results</TabsTrigger>
             <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
             <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
@@ -222,7 +282,7 @@ export default function SkillsPage() {
                         </Button>
                       )}
                       {assessment.status === "completed" && (
-                        <Button variant="outline" className="flex-1">
+                        <Button variant="outline" className="flex-1 bg-transparent">
                           View Certificate
                         </Button>
                       )}
@@ -231,6 +291,32 @@ export default function SkillsPage() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="courses" className="space-y-6">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-1">Explore Free Learning Paths</h3>
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                Access free courses from leading platforms including Coursera, edX, Udemy, freeCodeCamp, and MIT
+                OpenCourseWare.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {freeCourses.map((course) => (
+                <CourseCard key={course.id} course={course} onStartClick={handleStartCourse} />
+              ))}
+            </div>
+
+            {/* Recommended Courses */}
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold mb-6">Recommended for You</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {freeCourses.slice(0, 2).map((course) => (
+                  <CourseCard key={`rec-${course.id}`} course={course} onStartClick={handleStartCourse} />
+                ))}
+              </div>
             </div>
           </TabsContent>
 
@@ -271,10 +357,10 @@ export default function SkillsPage() {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button variant="outline" className="flex-1">
+                      <Button variant="outline" className="flex-1 bg-transparent">
                         View Certificate
                       </Button>
-                      <Button variant="outline" className="flex-1">
+                      <Button variant="outline" className="flex-1 bg-transparent">
                         Share Result
                       </Button>
                     </div>
@@ -308,6 +394,10 @@ export default function SkillsPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="leaderboard" className="space-y-6">
+            {/* Leaderboard content goes here */}
           </TabsContent>
         </Tabs>
       </div>

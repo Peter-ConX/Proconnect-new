@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/context/language-context"
 import { Navigation } from "@/components/navigation"
 import { FloatingChatButton } from "@/components/petrix/floating-chat-button"
+import { Toaster } from "sonner"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -30,6 +31,7 @@ export default function RootLayout({
               <div className="container mx-auto px-4 py-6">{children}</div>
             </main>
             <FloatingChatButton />
+            <Toaster richColors position="top-right" />
           </ThemeProvider>
         </LanguageProvider>
       </body>

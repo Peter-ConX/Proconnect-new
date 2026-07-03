@@ -2,7 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { toast } from "sonner"
 import { Search, Grid, List, Upload, ThumbsUp, Repeat, ImageIcon, Video, TagIcon } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -118,10 +119,32 @@ export default function ShowcasePage() {
   const [selectedIndustry, setSelectedIndustry] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [isUploading, setIsUploading] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
 
+  const [projectList, setProjectList] = useState<any[]>([])
+
+  useEffect(() => {
+    const saved = localStorage.getItem("proconnect_showcase_projects")
+    if (saved) {
+      try {
+        setProjectList(JSON.parse(saved))
+      } catch {
+        setProjectList(projects)
+      }
+    } else {
+      setProjectList(projects)
+      localStorage.setItem("proconnect_showcase_projects", JSON.stringify(projects))
+    }
+  }, [])
+
+  const saveProjects = (updatedList: any[]) => {
+    setProjectList(updatedList)
+    localStorage.setItem("proconnect_showcase_projects", JSON.stringify(updatedList))
+  }
+
   // Filter projects based on selected filters and search query
-  const filteredProjects = projects.filter((project) => {
+  const filteredProjects = projectList.filter((project) => {
     const fieldMatch = selectedField === "all" || project.field === selectedField
     const industryMatch = selectedIndustry === "all" || project.industry === selectedIndustry
     const searchMatch =
@@ -136,18 +159,113 @@ export default function ShowcasePage() {
     e.preventDefault()
     setIsUploading(true)
 
+    const formData = new FormData(e.currentTarget)
+    const title = formData.get("projectTitle") as string
+    const description = formData.get("projectDescription") as string
+    const field = formData.get("projectField") as string
+    const industry = formData.get("projectIndustry") as string
+    const skillsString = formData.get("projectTags") as string || "React, Figma"
+
     // Simulate upload progress
     let progress = 0
     const interval = setInterval(() => {
-      progress += 10
+      progress += 20
       setUploadProgress(progress)
 
       if (progress >= 100) {
         clearInterval(interval)
+        
+        const newProj = {
+          id: String(Date.now()),
+          title,
+          thumbnail: "/placeholder.svg?height=400&width=600&text=" + encodeURIComponent(title),
+          skills: skillsString.split(",").map(s => s.trim()).filter(Boolean),
+          uploader: {
+            name: "Okafor Chidera",
+            avatar: "/images/profile-picture.jpeg",
+            role: "Founder, C.E.O of Proconnect"
+          },
+          endorsements: 0,
+          field,
+          industry,
+        }
+
+        const updated = [newProj, ...projectList]
+        saveProjects(updated)
+        
         setIsUploading(false)
-        // Reset form and close dialog would happen here
+        setIsDialogOpen(false)
+        setUploadProgress(0)
+        toast.success("Project uploaded successfully!")
       }
-    }, 300)
+    }, 150)
+  }
+
+  const handleEndorseProject = (projectId: string) => {
+    const updated = projectList.map((p) => {
+      if (p.id === projectId) {
+        return {
+          ...p,
+          endorsements: p.endorsements + 1,
+        }
+      }
+      return p
+    })
+    saveProjects(updated)
+    const project = projectList.find(p => p.id === projectId)
+    toast.success(`You endorsed "${project?.title}"!`)
+  }
+
+  const handleRemixProject = (project: any) => {
+    // Copy project to Build catalog
+    const buildSaved = localStorage.getItem("proconnect_projects_build")
+    let buildList = []
+    if (buildSaved) {
+      try {
+        buildList = JSON.parse(buildSaved)
+      } catch {
+        buildList = []
+      }
+    }
+    
+    // Check if project is already remixed/present
+    const isPresent = buildList.some((p: any) => p.name === `Remix: ${project.title}`)
+    if (isPresent) {
+      toast.info(`"${project.title}" has already been remixed in your Build section.`)
+      return
+    }
+
+    const remixedProject = {
+      id: `remix_${Date.now()}`,
+      name: `Remix: ${project.title}`,
+      description: `Remixed codebase of "${project.title}" uploaded by ${project.uploader.name}. Starting customization and enhancements.`,
+      status: "Planning",
+      progress: 10,
+      dueDate: "Dec 31, 2026",
+      members: [
+        { name: "Okafor Chidera", avatar: "/images/profile-picture.jpeg", role: "Remixer / Project Lead" },
+        { name: project.uploader.name, avatar: project.uploader.avatar, role: "Original Creator" }
+      ],
+      tasks: [
+        { id: "t1", title: "Analyze Original Code", status: "completed", assignee: "Okafor Chidera" },
+        { id: "t2", title: "Plan Enhancements", status: "in-progress", assignee: "Okafor Chidera" }
+      ],
+      files: [
+        { name: "Original Source Code.zip", type: "zip", size: "8.4 MB", uploadedBy: project.uploader.name, date: "Just now" }
+      ],
+      comments: [
+        {
+          id: "c1",
+          author: { name: "System", avatar: "/placeholder.svg?height=40&width=40&text=SYS" },
+          content: `Project remixed from "${project.title}" by ${project.uploader.name}.`,
+          timestamp: "Just now"
+        }
+      ]
+    }
+
+    buildList.unshift(remixedProject)
+    localStorage.setItem("proconnect_projects_build", JSON.stringify(buildList))
+    toast.success(`"${project.title}" remixed successfully! Check the "Build" page to see your work.`)
   }
 
   return (
@@ -159,7 +277,7 @@ export default function ShowcasePage() {
             <p className="text-lg text-white/80 mb-8">
               Discover inspiring projects from professionals across industries or share your own work with the community
             </p>
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white">
                   <Upload className="mr-2 h-5 w-5" />
@@ -430,11 +548,11 @@ export default function ShowcasePage() {
                         </div>
                       </CardContent>
                       <CardFooter className="flex justify-between">
-                        <Button variant="ghost" size="sm" className="gap-1">
+                        <Button variant="ghost" size="sm" className="gap-1" onClick={() => handleEndorseProject(project.id)}>
                           <ThumbsUp className="h-4 w-4" />
                           <span>Endorse ({project.endorsements})</span>
                         </Button>
-                        <Button variant="ghost" size="sm" className="gap-1">
+                        <Button variant="ghost" size="sm" className="gap-1" onClick={() => handleRemixProject(project)}>
                           <Repeat className="h-4 w-4" />
                           <span>Remix</span>
                         </Button>

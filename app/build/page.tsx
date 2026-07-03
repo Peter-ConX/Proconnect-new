@@ -2,7 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { toast } from "sonner"
 import {
   Search,
   Plus,
@@ -153,10 +154,32 @@ export default function BuildPage() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<string>("description")
   const [isCreating, setIsCreating] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newComment, setNewComment] = useState("")
+  
+  const [projectList, setProjectList] = useState<any[]>([])
+
+  useEffect(() => {
+    const saved = localStorage.getItem("proconnect_projects_build")
+    if (saved) {
+      try {
+        setProjectList(JSON.parse(saved))
+      } catch {
+        setProjectList(projects)
+      }
+    } else {
+      setProjectList(projects)
+      localStorage.setItem("proconnect_projects_build", JSON.stringify(projects))
+    }
+  }, [])
+
+  const saveProjects = (updatedList: any[]) => {
+    setProjectList(updatedList)
+    localStorage.setItem("proconnect_projects_build", JSON.stringify(updatedList))
+  }
 
   // Filter projects based on selected status and search query
-  const filteredProjects = projects.filter((project) => {
+  const filteredProjects = projectList.filter((project) => {
     const statusMatch = selectedStatus === "all" || project.status.toLowerCase() === selectedStatus.toLowerCase()
     const searchMatch =
       searchQuery === "" ||
@@ -167,26 +190,116 @@ export default function BuildPage() {
   })
 
   // Get the selected project details
-  const projectDetails = selectedProject ? projects.find((p) => p.id === selectedProject) : null
+  const projectDetails = selectedProject ? projectList.find((p) => p.id === selectedProject) : null
 
   const handleCreateProject = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsCreating(true)
 
+    const formData = new FormData(e.currentTarget)
+    const name = formData.get("projectName") as string
+    const description = formData.get("projectDescription") as string
+    const status = (formData.get("projectStatus") || "Active") as string
+    
     // Simulate API call
     setTimeout(() => {
+      const newProj = {
+        id: String(Date.now()),
+        name,
+        description,
+        status: status.charAt(0).toUpperCase() + status.slice(1),
+        progress: 0,
+        dueDate: "Dec 31, 2026",
+        members: [
+          { name: "Okafor Chidera", avatar: "/images/profile-picture.jpeg", role: "Project Lead" }
+        ],
+        tasks: [],
+        files: [],
+        comments: []
+      }
+
+      const updated = [newProj, ...projectList]
+      saveProjects(updated)
       setIsCreating(false)
-      // Reset form and close dialog would happen here
-    }, 1500)
+      setIsDialogOpen(false)
+      toast.success("Project created successfully!")
+    }, 1000)
+  }
+
+  const handleAddTask = () => {
+    if (!selectedProject) return
+    const title = prompt("Enter task title:")
+    if (!title || !title.trim()) return
+
+    const updated = projectList.map((p) => {
+      if (p.id === selectedProject) {
+        const newTask = {
+          id: `t_${Date.now()}`,
+          title,
+          status: "planned",
+          assignee: "Okafor Chidera"
+        }
+        return {
+          ...p,
+          tasks: [...(p.tasks || []), newTask]
+        }
+      }
+      return p
+    })
+    
+    saveProjects(updated)
+    toast.success("Task added to roadmap!")
+  }
+
+  const handleUploadFile = () => {
+    if (!selectedProject) return
+    const name = prompt("Enter file name (e.g. design-spec.pdf):")
+    if (!name || !name.trim()) return
+
+    const updated = projectList.map((p) => {
+      if (p.id === selectedProject) {
+        const newFile = {
+          name,
+          type: name.split(".").pop() || "unknown",
+          size: "1.2 MB",
+          uploadedBy: "Okafor Chidera",
+          date: "Just now"
+        }
+        return {
+          ...p,
+          files: [...(p.files || []), newFile]
+        }
+      }
+      return p
+    })
+    
+    saveProjects(updated)
+    toast.success("File uploaded successfully!")
   }
 
   const handleAddComment = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!newComment.trim()) return
+    if (!newComment.trim() || !selectedProject) return
 
-    // In a real app, you would add the comment to the project
-    console.log("Adding comment:", newComment)
+    const updated = projectList.map((p) => {
+      if (p.id === selectedProject) {
+        const commentObj = {
+          id: `c_${Date.now()}`,
+          author: { name: "Okafor Chidera", avatar: "/images/profile-picture.jpeg" },
+          content: newComment,
+          timestamp: "Just now"
+        }
+        return {
+          ...p,
+          comments: [...(p.comments || []), commentObj]
+        }
+      }
+      return p
+    })
+    
+    saveProjects(updated)
     setNewComment("")
+    toast.success("Comment added!")
   }
 
   // Calculate task statistics
@@ -210,7 +323,7 @@ export default function BuildPage() {
                 <p className="text-lg text-white/80 mb-8">
                   Collaborate on projects with other professionals to create innovative solutions
                 </p>
-                <Dialog>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white">
                       <Plus className="mr-2 h-5 w-5" />
@@ -475,7 +588,7 @@ export default function BuildPage() {
                     <div className="space-y-6">
                       <div className="flex justify-between items-center">
                         <h3 className="text-lg font-semibold">Tasks</h3>
-                        <Button size="sm" className="bg-sky-500 hover:bg-sky-600">
+                        <Button size="sm" className="bg-sky-500 hover:bg-sky-600" onClick={handleAddTask}>
                           <PlusCircle className="h-4 w-4 mr-2" />
                           Add Task
                         </Button>
@@ -584,7 +697,7 @@ export default function BuildPage() {
                     <div className="space-y-6">
                       <div className="flex justify-between items-center">
                         <h3 className="text-lg font-semibold">Shared Files</h3>
-                        <Button size="sm" className="bg-sky-500 hover:bg-sky-600">
+                        <Button size="sm" className="bg-sky-500 hover:bg-sky-600" onClick={handleUploadFile}>
                           <Upload className="h-4 w-4 mr-2" />
                           Upload File
                         </Button>

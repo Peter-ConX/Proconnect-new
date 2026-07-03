@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { X, Clock, MapPin, Users, Calendar, Mail, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -9,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { toast } from "sonner"
 
 interface MentorAvailabilityModalProps {
   isOpen: boolean
@@ -24,6 +25,7 @@ interface MentorAvailabilityModalProps {
     location: string
     capacity: number
     registered: number
+    avatar?: string
   }
 }
 
@@ -38,37 +40,43 @@ export function MentorAvailabilityModal({ isOpen, onClose, mentor }: MentorAvail
 
   if (!isOpen) return null
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setIsRegistering(true)
 
-    try {
-      // Store mentee data
-      const response = await fetch("/api/mentorship/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mentorId: mentor.id || "1",
-          email: formData.email,
-          name: formData.name,
-          experience: formData.experience,
-        }),
-      })
-
-      if (response.ok) {
-        setIsRegistering(false)
-        // Show success and redirect
-        setTimeout(() => {
-          onClose()
-          window.location.href = `/mentorship/${mentor.id || "1"}/chat`
-        }, 1500)
-      } else {
-        setIsRegistering(false)
+    // Save session locally and redirect
+    setTimeout(() => {
+      const saved = localStorage.getItem("proconnect_mentorships")
+      let list = []
+      if (saved) {
+        try {
+          list = JSON.parse(saved)
+        } catch {
+          list = []
+        }
       }
-    } catch (error) {
-      console.error("Registration error:", error)
+
+      const newMentorship = {
+        id: mentor.id || String(Date.now()),
+        mentorName: mentor.name,
+        mentorTitle: mentor.title,
+        topic: mentor.topic,
+        date: mentor.date,
+        time: mentor.time,
+        status: "Active",
+        avatar: mentor.avatar || "/placeholder.svg"
+      }
+
+      list.unshift(newMentorship)
+      localStorage.setItem("proconnect_mentorships", JSON.stringify(list))
+
       setIsRegistering(false)
-    }
+      toast.success("Successfully registered for mentorship session!")
+      onClose()
+
+      // Redirect to chat
+      window.location.href = `/mentorship/${mentor.id || "1"}/chat`
+    }, 1200)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,77 +87,92 @@ export function MentorAvailabilityModal({ isOpen, onClose, mentor }: MentorAvail
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        {/* Header with Proconnect Logo */}
-        <div className="relative bg-gradient-to-r from-teal-500 to-amber-500 p-6 rounded-t-2xl">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] overflow-y-auto flex flex-col">
+        
+        {/* Header - Teal Blue with Avatar matching webinar-reference.jpeg */}
+        <div className="relative bg-[#0284c7] p-6 text-white rounded-t-2xl flex flex-col items-center text-center">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+            className="absolute top-4 right-4 text-white/80 hover:text-white hover:bg-white/20 rounded-full p-2 transition-colors"
             aria-label="Close modal"
           >
             <X className="h-5 w-5" />
           </button>
 
-          <div className="text-center">
-            <div className="mb-3">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full backdrop-blur-sm">
-                <div className="text-2xl font-bold text-white">P</div>
-              </div>
-            </div>
-            <div className="text-sm text-white/80 mb-1">Your mentor</div>
-            <h2 className="text-xl font-bold text-white">{mentor.name}</h2>
-            <p className="text-white/90 text-sm">{mentor.title}</p>
-          </div>
+          <Avatar className="h-20 w-20 border-4 border-white/20 shadow-md mb-3">
+            <AvatarImage src={mentor.avatar || "/placeholder.svg"} alt={mentor.name} />
+            <AvatarFallback className="bg-sky-800 text-white text-xl font-bold">
+              {mentor.name.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-[10px] bg-white/20 text-white font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider mb-2">
+            Your Mentor & Host
+          </span>
+          <h2 className="text-xl font-extrabold tracking-tight">{mentor.name}</h2>
+          <p className="text-sky-100 text-xs mt-0.5">{mentor.title}</p>
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-6 flex-1">
           {/* Session Details */}
-          <div className="mb-6">
-            <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-3">{mentor.topic}</h3>
+          <div className="space-y-4">
+            <h3 className="font-bold text-lg text-gray-900 dark:text-white leading-tight">
+              {mentor.topic}
+            </h3>
 
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                <Calendar className="h-4 w-4 text-teal-500" />
-                <span className="text-sm">{mentor.date}</span>
+            <div className="grid grid-cols-2 gap-4 text-sm bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                <Calendar className="h-4 w-4 text-sky-500 shrink-0" />
+                <span>{mentor.date}</span>
               </div>
-
-              <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                <Clock className="h-4 w-4 text-teal-500" />
-                <span className="text-sm">
-                  {mentor.time} ({mentor.timezone})
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                <MapPin className="h-4 w-4 text-teal-500" />
-                <span className="text-sm">{mentor.location}</span>
-              </div>
-
-              <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                <Users className="h-4 w-4 text-teal-500" />
-                <span className="text-sm">
-                  {mentor.registered}/{mentor.capacity} registered
-                </span>
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                <Clock className="h-4 w-4 text-sky-500 shrink-0" />
+                <span>{mentor.time}</span>
               </div>
             </div>
 
-            <button className="text-teal-500 hover:text-teal-600 text-sm mt-2 transition-colors">
-              Convert to other timezone
-            </button>
+            {/* Timezone & Location Select Dropdowns */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Location
+                </Label>
+                <select className="w-full text-xs border border-gray-200 dark:border-gray-700 rounded-md p-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-1 focus:ring-sky-500 outline-none">
+                  <option value="current">{mentor.location}</option>
+                  <option value="zoom">Zoom Video Call</option>
+                  <option value="meet">Google Meet</option>
+                  <option value="teams">Microsoft Teams</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Timezone
+                </Label>
+                <select className="w-full text-xs border border-gray-200 dark:border-gray-700 rounded-md p-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-1 focus:ring-sky-500 outline-none">
+                  <option value="current">{mentor.timezone}</option>
+                  <option value="gmt">GMT (UTC+0)</option>
+                  <option value="est">EST (UTC-5)</option>
+                  <option value="pst">PST (UTC-8)</option>
+                  <option value="wat">WAT (UTC+1)</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <Separator className="my-6" />
 
-          {/* Registration Form */}
+          {/* Registration Form with Required Asterisk */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">Your details</div>
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              Registration Form
+            </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <Label htmlFor="name" className="text-sm font-medium">
-                  Full Name
+                <Label htmlFor="name" className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                  Full Name <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative mt-1">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -158,8 +181,8 @@ export function MentorAvailabilityModal({ isOpen, onClose, mentor }: MentorAvail
                     name="name"
                     type="text"
                     required
-                    className="pl-10"
-                    placeholder="Enter your full name"
+                    className="pl-10 text-xs"
+                    placeholder="e.g. John Doe"
                     value={formData.name}
                     onChange={handleInputChange}
                   />
@@ -167,8 +190,8 @@ export function MentorAvailabilityModal({ isOpen, onClose, mentor }: MentorAvail
               </div>
 
               <div>
-                <Label htmlFor="email" className="text-sm font-medium">
-                  Email Address
+                <Label htmlFor="email" className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                  Email Address <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative mt-1">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -177,8 +200,8 @@ export function MentorAvailabilityModal({ isOpen, onClose, mentor }: MentorAvail
                     name="email"
                     type="email"
                     required
-                    className="pl-10"
-                    placeholder="your.email@example.com"
+                    className="pl-10 text-xs"
+                    placeholder="e.g. name@example.com"
                     value={formData.email}
                     onChange={handleInputChange}
                   />
@@ -186,14 +209,14 @@ export function MentorAvailabilityModal({ isOpen, onClose, mentor }: MentorAvail
               </div>
 
               <div>
-                <Label htmlFor="experience" className="text-sm font-medium">
+                <Label htmlFor="experience" className="text-xs font-semibold text-gray-600 dark:text-gray-300">
                   Experience Level
                 </Label>
                 <Input
                   id="experience"
                   name="experience"
                   type="text"
-                  className="mt-1"
+                  className="mt-1 text-xs"
                   placeholder="e.g., Beginner, Intermediate, Advanced"
                   value={formData.experience}
                   onChange={handleInputChange}
@@ -204,38 +227,31 @@ export function MentorAvailabilityModal({ isOpen, onClose, mentor }: MentorAvail
             <Button
               type="submit"
               disabled={isRegistering}
-              className="w-full bg-gradient-to-r from-teal-500 to-amber-500 hover:from-teal-600 hover:to-amber-600 text-white font-semibold py-3 rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
+              className="w-full bg-[#0284c7] hover:bg-sky-600 text-white font-bold py-3.5 rounded-lg text-xs tracking-wider uppercase mt-4 shadow-md transition-all duration-150"
             >
               {isRegistering ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Registering...
                 </div>
               ) : (
                 "REGISTER NOW"
               )}
             </Button>
-
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3">
-              Your details will be forwarded to the mentor, who might communicate with you regarding this session and
-              other services.
-            </p>
           </form>
 
-          {/* Capacity Badge */}
-          <div className="flex justify-center mt-4">
-            <Badge
-              variant="outline"
-              className="border-amber-200 text-amber-600 dark:border-amber-800 dark:text-amber-400"
-            >
-              {mentor.capacity - mentor.registered} spots remaining
-            </Badge>
+          {/* Spots Remaining Badge */}
+          <div className="flex justify-center items-center gap-2 mt-4 text-xs text-amber-600 font-semibold">
+            <Users className="h-3.5 w-3.5" />
+            <span>{mentor.capacity - mentor.registered} spots remaining</span>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="px-6 pb-4">
-          <div className="text-center text-xs text-gray-400">POWERED BY PROCONNECT</div>
+        {/* Footer - Dark "POWERED BY WEBINARJAM" matching webinar-reference.jpeg */}
+        <div className="bg-gray-950 py-3 rounded-b-2xl flex items-center justify-center border-t border-gray-800">
+          <span className="text-[9px] text-gray-500 tracking-widest font-semibold uppercase">
+            POWERED BY WEBINARJAM
+          </span>
         </div>
       </div>
     </div>

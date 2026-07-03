@@ -3,8 +3,9 @@
 import type React from "react"
 import type { User } from "@/types/user"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import { toast } from "sonner"
 import {
   Bookmark,
   Calendar,
@@ -54,7 +55,7 @@ const currentUser: User = {
 }
 
 // Sample posts with author verification status
-const samplePosts = [
+const initialPosts = [
   {
     id: 1,
     author: {
@@ -65,15 +66,22 @@ const samplePosts = [
       role: "Senior UX Designer at DesignHub",
       isHighProfile: true,
     },
-    content:
-      "Just finished a major redesign project for a fintech client. The key insight: simplifying the onboarding flow increased conversion by 34%. Always test your assumptions!",
+    content: "Just finished a major redesign project for a fintech client. The key insight: simplifying the onboarding flow increased conversion by 34%. Always test your assumptions!",
     image: "/placeholder.svg?height=300&width=600",
     time: "2 hours ago",
     likes: 128,
-    comments: 24,
+    comments: 2,
     shares: 12,
     isLiked: true,
     isBookmarked: false,
+    isReposted: false,
+    isForYou: true,
+    isFollowing: true,
+    isTrending: false,
+    commentsList: [
+      { id: "c1", author: { name: "Sarah Chen", avatar: "/placeholder.svg?height=40&width=40&text=SC" }, content: "Wow, 34% is huge! Did you also look at page load speeds during the onboarding?", timestamp: "1 hour ago" },
+      { id: "c2", author: { name: "David Kim", avatar: "/placeholder.svg?height=40&width=40&text=DK" }, content: "Nice job Alex! Simple onboarding flows always perform better.", timestamp: "30 mins ago" }
+    ]
   },
   {
     id: 2,
@@ -85,8 +93,7 @@ const samplePosts = [
       role: "Electric Vehicle & Clean Energy Company",
       isOrganization: true,
     },
-    content:
-      "🚀 Excited to announce our new sustainable energy initiative. Learn how we're working to reduce carbon emissions and create a cleaner future for all.",
+    content: "🚀 Excited to announce our new sustainable energy initiative. Learn how we're working to reduce carbon emissions and create a cleaner future for all.",
     link: {
       title: "Tesla Sustainable Energy Initiative",
       url: "#",
@@ -94,10 +101,15 @@ const samplePosts = [
     },
     time: "5 hours ago",
     likes: 986,
-    comments: 118,
+    comments: 0,
     shares: 332,
     isLiked: false,
     isBookmarked: true,
+    isReposted: false,
+    isForYou: true,
+    isFollowing: false,
+    isTrending: true,
+    commentsList: []
   },
   {
     id: 3,
@@ -109,8 +121,7 @@ const samplePosts = [
       role: "Frontend Architect at TechCorp",
       isPremium: true,
     },
-    content:
-      "🚀 Just published my new article on building performant React components. Check it out and let me know your thoughts!",
+    content: "🚀 Just published my new article on building performant React components. Check it out and let me know your thoughts!",
     link: {
       title: "Advanced React Performance Optimization Techniques",
       url: "#",
@@ -118,10 +129,15 @@ const samplePosts = [
     },
     time: "5 hours ago",
     likes: 86,
-    comments: 18,
+    comments: 0,
     shares: 32,
     isLiked: false,
     isBookmarked: true,
+    isReposted: false,
+    isForYou: true,
+    isFollowing: true,
+    isTrending: false,
+    commentsList: []
   },
   {
     id: 4,
@@ -133,16 +149,68 @@ const samplePosts = [
       role: "Global Health Authority",
       isOrganization: true,
     },
-    content:
-      "New guidelines on mental health in the workplace. Employers play a crucial role in supporting employee wellbeing. Read our comprehensive report.",
+    content: "New guidelines on mental health in the workplace. Employers play a crucial role in supporting employee wellbeing. Read our comprehensive report.",
     time: "1 day ago",
     likes: 1245,
-    comments: 208,
+    comments: 0,
     shares: 515,
     isLiked: false,
     isBookmarked: false,
+    isReposted: false,
+    isForYou: true,
+    isFollowing: false,
+    isTrending: true,
+    commentsList: []
   },
+  {
+    id: 5,
+    author: {
+      id: "6",
+      name: "Emma Clark",
+      handle: "@emmaclark",
+      avatar: "/placeholder.svg?height=40&width=40&text=EC",
+      role: "Product Designer at CreativeStudio",
+      isHighProfile: true,
+    },
+    content: "Excited to announce that I'll be speaking at the UX Conference next month about designing for accessibility. Hope to see some of you there! #UXDesign #Accessibility",
+    time: "3 hours ago",
+    likes: 76,
+    comments: 0,
+    shares: 8,
+    isLiked: false,
+    isBookmarked: false,
+    isReposted: false,
+    isForYou: true,
+    isFollowing: true,
+    isTrending: false,
+    commentsList: []
+  },
+  {
+    id: 6,
+    author: {
+      id: "7",
+      name: "Central Bank of Nigeria",
+      handle: "@cbn",
+      avatar: "/placeholder.svg?height=40&width=40&text=CBN",
+      role: "Nigeria's Central Banking Authority",
+      isOrganization: true,
+    },
+    content: "Announcing new financial inclusion initiatives to support small businesses across Nigeria. Our goal is to empower entrepreneurs and drive economic growth in all regions.",
+    image: "/placeholder.svg?height=300&width=600",
+    time: "1 day ago",
+    likes: 1432,
+    comments: 0,
+    shares: 356,
+    isLiked: false,
+    isBookmarked: false,
+    isReposted: false,
+    isForYou: true,
+    isFollowing: false,
+    isTrending: true,
+    commentsList: []
+  }
 ]
+
 
 export default function HomePage() {
   const { t, selectedLanguage } = useLanguage()
@@ -150,32 +218,54 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState("for-you")
   const [userPosts, setUserPosts] = useState<any[]>([])
 
+  const [posts, setPosts] = useState<any[]>([])
+  const [commentingPostId, setCommentingPostId] = useState<number | null>(null)
+  const [newCommentText, setNewCommentText] = useState("")
+
+  useEffect(() => {
+    const saved = localStorage.getItem("proconnect_posts")
+    if (saved) {
+      try {
+        setPosts(JSON.parse(saved))
+      } catch {
+        setPosts(initialPosts)
+      }
+    } else {
+      setPosts(initialPosts)
+      localStorage.setItem("proconnect_posts", JSON.stringify(initialPosts))
+    }
+  }, [])
+
+  const savePosts = (updatedPosts: any[]) => {
+    setPosts(updatedPosts)
+    localStorage.setItem("proconnect_posts", JSON.stringify(updatedPosts))
+  }
+
   // Get translated posts based on selected language
-  const getTranslatedPosts = () => {
+  const getTranslatedPosts = (allPosts: any[]) => {
     const lang = selectedLanguage.code
     const translations = postTranslations[lang] || postTranslations.en
 
-    const translatedSamplePosts = samplePosts.map((post, index) => {
-      const postKey = `post${index + 1}` as keyof typeof translations
-      const translatedContent = translations[postKey] || post.content
-
-      return {
-        ...post,
-        content: translatedContent,
-        link: post.link
-          ? {
-              ...post.link,
-              title: translations[`${postKey}Link` as keyof typeof translations] || post.link.title,
-            }
-          : post.link,
+    return allPosts.map((post) => {
+      if (post.id >= 1 && post.id <= 6) {
+        const postKey = `post${post.id}` as keyof typeof translations
+        const translatedContent = translations[postKey] || post.content
+        return {
+          ...post,
+          content: translatedContent,
+          link: post.link
+            ? {
+                ...post.link,
+                title: translations[`${postKey}Link` as keyof typeof translations] || post.link.title,
+              }
+            : post.link,
+        }
       }
+      return post
     })
-
-    // Combine user posts with sample posts, user posts first
-    return [...userPosts, ...translatedSamplePosts]
   }
 
-  const translatedPosts = getTranslatedPosts()
+  const translatedPosts = getTranslatedPosts(posts)
 
   const handlePostSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -199,11 +289,300 @@ export default function HomePage() {
       shares: 0,
       isLiked: false,
       isBookmarked: false,
+      isReposted: false,
+      isForYou: true,
+      isFollowing: true,
+      isTrending: false,
+      commentsList: []
     }
 
-    // Add to user posts
-    setUserPosts((prev) => [newPost, ...prev])
+    const updated = [newPost, ...posts]
+    savePosts(updated)
     setPostContent("")
+    toast.success("Post published successfully!")
+  }
+
+  const handleLike = (postId: number) => {
+    const updated = posts.map((post) => {
+      if (post.id === postId) {
+        const isLiked = !post.isLiked
+        return {
+          ...post,
+          isLiked,
+          likes: isLiked ? post.likes + 1 : Math.max(0, post.likes - 1),
+        }
+      }
+      return post
+    })
+    savePosts(updated)
+  }
+
+  const handleBookmark = (postId: number) => {
+    const updated = posts.map((post) => {
+      if (post.id === postId) {
+        const isBookmarked = !post.isBookmarked
+        if (isBookmarked) {
+          toast.success("Post bookmarked!")
+        } else {
+          toast.success("Post removed from bookmarks")
+        }
+        return {
+          ...post,
+          isBookmarked,
+        }
+      }
+      return post
+    })
+    savePosts(updated)
+  }
+
+  const handleRepost = (postId: number) => {
+    const updated = posts.map((post) => {
+      if (post.id === postId) {
+        const isReposted = !post.isReposted
+        if (isReposted) {
+          toast.success("Post reposted!")
+        }
+        return {
+          ...post,
+          isReposted,
+          shares: isReposted ? post.shares + 1 : Math.max(0, post.shares - 1),
+        }
+      }
+      return post
+    })
+    savePosts(updated)
+  }
+
+  const handleShare = (post: any) => {
+    if (typeof window !== "undefined") {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(`${window.location.origin}/post/${post.id}`)
+      }
+    }
+    toast.success("Post link copied to clipboard!")
+  }
+
+  const handleAddComment = (postId: number, e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newCommentText.trim()) return
+
+    const updated = posts.map((post) => {
+      if (post.id === postId) {
+        const newComment = {
+          id: `c_${Date.now()}`,
+          author: {
+            name: currentUser.name,
+            avatar: currentUser.avatar,
+          },
+          content: newCommentText,
+          timestamp: "Just now",
+        }
+        return {
+          ...post,
+          comments: post.comments + 1,
+          commentsList: [...(post.commentsList || []), newComment],
+        }
+      }
+      return post
+    })
+
+    savePosts(updated)
+    setNewCommentText("")
+    toast.success("Comment added!")
+  }
+
+  const renderPostCard = (post: any) => {
+    return (
+      <Card key={post.id} className="border-none shadow-md card-hover select-none">
+        <CardHeader className="pb-3 select-none">
+          <div className="flex justify-between">
+            <div className="flex items-start gap-3">
+              <Avatar className="border select-none">
+                <AvatarImage
+                  src={post.author.avatar || "/placeholder.svg"}
+                  alt={post.author.name}
+                  draggable={false}
+                />
+                <AvatarFallback className="bg-sky-700 text-white">
+                  {post.author.name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="select-none">
+                <div className="flex items-center gap-1">
+                  <p className="font-medium select-none">{post.author.name}</p>
+                  <VerifiedBadge type={getVerificationType(post.author)} />
+                  <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
+                    {post.author.handle}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
+                    • {post.time}
+                  </p>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
+                  {post.author.role}
+                </p>
+              </div>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-gray-500 interactive">
+                  <MoreHorizontal className="w-5 h-5" />
+                  <span className="sr-only">{t("home.moreOptions")}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={`/profile?username=${post.author.handle.replace("@", "")}`}>
+                    <UserIcon className="w-4 h-4 mr-2" />
+                    {t("home.viewProfile")}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleBookmark(post.id)}>
+                  <Bookmark className="w-4 h-4 mr-2" />
+                  {post.isBookmarked ? "Remove Bookmark" : t("home.savePost")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </CardHeader>
+        <CardContent className="pb-3">
+          <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">{post.content}</p>
+          {post.image && (
+            <div className="mt-3 rounded-lg overflow-hidden">
+              <img
+                src={post.image || "/placeholder.svg"}
+                alt="Post attachment"
+                className="w-full h-auto select-none"
+                draggable={false}
+              />
+            </div>
+          )}
+          {post.link && (
+            <div className="mt-3 border rounded-lg overflow-hidden interactive">
+              <div className="flex flex-col md:flex-row">
+                <div className="md:w-1/3 h-40 md:h-auto bg-muted dark:bg-muted">
+                  <img
+                    src={post.link.image || "/placeholder.svg"}
+                    alt={post.link.title}
+                    className="w-full h-full object-cover select-none"
+                    draggable={false}
+                  />
+                </div>
+                <div className="md:w-2/3 p-4">
+                  <h3 className="font-medium">{post.link.title}</h3>
+                  <a
+                    href={post.link.url}
+                    className="text-sm text-sky-600 dark:text-sky-400 hover:underline mt-2 inline-block interactive"
+                  >
+                    {t("home.readArticle")}
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+        <CardFooter className="flex flex-col items-stretch border-t pt-3">
+          <div className="flex justify-between w-full">
+            <div className="flex gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleLike(post.id)}
+                className={`gap-1 interactive ${
+                  post.isLiked ? "text-sky-600 dark:text-sky-400" : "text-gray-600 dark:text-gray-300"
+                }`}
+              >
+                <ThumbsUp className="w-4 h-4" />
+                <span>{post.likes}</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCommentingPostId(commentingPostId === post.id ? null : post.id)}
+                className={`gap-1 interactive ${
+                  commentingPostId === post.id ? "text-sky-600 dark:text-sky-400 font-semibold" : "text-gray-600 dark:text-gray-300"
+                }`}
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>{post.comments}</span>
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleRepost(post.id)}
+                className={`gap-1 interactive ${
+                  post.isReposted ? "text-sky-600 dark:text-sky-400" : "text-gray-600 dark:text-gray-300"
+                }`}
+              >
+                <Repeat className="w-4 h-4" />
+                <span>{post.shares}</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleBookmark(post.id)}
+                className={`interactive ${
+                  post.isBookmarked ? "text-sky-600 dark:text-sky-400" : "text-gray-600 dark:text-gray-300"
+                }`}
+              >
+                <Bookmark className="w-4 h-4" />
+                <span className="sr-only">{t("home.bookmark")}</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleShare(post)}
+                className="text-gray-600 dark:text-gray-300 interactive"
+              >
+                <Share2 className="w-4 h-4" />
+                <span className="sr-only">{t("home.share")}</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Comment Section inside the card */}
+          {commentingPostId === post.id && (
+            <div className="mt-4 pt-4 border-t space-y-4 w-full">
+              {/* Comments List */}
+              <div className="space-y-3 max-h-60 overflow-y-auto">
+                {(post.commentsList || []).length === 0 ? (
+                  <p className="text-xs text-gray-500 italic py-2">No comments yet. Be the first to reply!</p>
+                ) : (
+                  (post.commentsList || []).map((comment: any) => (
+                    <div key={comment.id} className="flex gap-2 text-sm bg-gray-50 dark:bg-gray-700/50 p-2.5 rounded-lg">
+                      <Avatar className="h-7 w-7">
+                        <AvatarImage src={comment.author.avatar || "/placeholder.svg"} alt={comment.author.name} />
+                        <AvatarFallback>{comment.author.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-xs">{comment.author.name}</span>
+                          <span className="text-[10px] text-muted-foreground">{comment.timestamp}</span>
+                        </div>
+                        <p className="text-gray-700 dark:text-gray-300 mt-0.5 text-xs">{comment.content}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              {/* Add Comment Form */}
+              <form onSubmit={(e) => handleAddComment(post.id, e)} className="flex gap-2">
+                <Input
+                  placeholder="Add a comment..."
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                  className="flex-1 text-sm h-8"
+                />
+                <Button type="submit" size="sm" className="h-8 bg-sky-500 hover:bg-sky-600 text-white text-xs px-3">Reply</Button>
+              </form>
+            </div>
+          )}
+        </CardFooter>
+      </Card>
+    )
   }
 
   return (
@@ -302,300 +681,27 @@ export default function HomePage() {
               </TabsList>
 
               <TabsContent value="for-you" className="mt-4 space-y-6">
-                {/* Posts */}
-                {translatedPosts.map((post) => (
-                  <Card key={post.id} className="border-none shadow-md card-hover select-none">
-                    <CardHeader className="pb-3 select-none">
-                      <div className="flex justify-between">
-                        <div className="flex items-start gap-3">
-                          <Avatar className="border select-none">
-                            <AvatarImage
-                              src={post.author.avatar || "/placeholder.svg"}
-                              alt={post.author.name}
-                              draggable={false}
-                            />
-                            <AvatarFallback className="bg-sky-700 text-white">
-                              {post.author.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="select-none">
-                            <div className="flex items-center gap-1">
-                              <p className="font-medium select-none">{post.author.name}</p>
-                              <VerifiedBadge type={getVerificationType(post.author)} />
-                              <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
-                                {post.author.handle}
-                              </p>
-                              <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
-                                • {post.time}
-                              </p>
-                            </div>
-                            <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
-                              {post.author.role}
-                            </p>
-                          </div>
-                        </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-gray-500 interactive">
-                              <MoreHorizontal className="w-5 h-5" />
-                              <span className="sr-only">{t("home.moreOptions")}</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <UserIcon className="w-4 h-4 mr-2" />
-                              {t("home.viewProfile")}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Bookmark className="w-4 h-4 mr-2" />
-                              {t("home.savePost")}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
-                              <span>{t("home.reportPost")}</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pb-3">
-                      <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">{post.content}</p>
-                      {post.image && (
-                        <div className="mt-3 rounded-lg overflow-hidden">
-                          <img
-                            src={post.image || "/placeholder.svg"}
-                            alt="Post attachment"
-                            className="w-full h-auto select-none"
-                            draggable={false}
-                          />
-                        </div>
-                      )}
-                      {post.link && (
-                        <div className="mt-3 border rounded-lg overflow-hidden interactive">
-                          <div className="flex flex-col md:flex-row">
-                            <div className="md:w-1/3 h-40 md:h-auto bg-muted dark:bg-muted">
-                              <img
-                                src={post.link.image || "/placeholder.svg"}
-                                alt={post.link.title}
-                                className="w-full h-full object-cover select-none"
-                                draggable={false}
-                              />
-                            </div>
-                            <div className="md:w-2/3 p-4">
-                              <h3 className="font-medium">{post.link.title}</h3>
-                              <a
-                                href={post.link.url}
-                                className="text-sm text-sky-600 dark:text-sky-400 hover:underline mt-2 inline-block interactive"
-                              >
-                                {t("home.readArticle")}
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                    <CardFooter className="flex justify-between">
-                      <div className="flex gap-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={`gap-1 interactive ${
-                            post.isLiked ? "text-sky-600 dark:text-sky-400" : "text-gray-600 dark:text-gray-300"
-                          }`}
-                        >
-                          <ThumbsUp className="w-4 h-4" />
-                          <span>{post.likes}</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="gap-1 text-gray-600 dark:text-gray-300 interactive"
-                        >
-                          <MessageSquare className="w-4 h-4" />
-                          <span>{post.comments}</span>
-                        </Button>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="gap-1 text-gray-600 dark:text-gray-300 interactive"
-                        >
-                          <Repeat className="w-4 h-4" />
-                          <span>{post.shares}</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className={`interactive ${
-                            post.isBookmarked ? "text-sky-600 dark:text-sky-400" : "text-gray-600 dark:text-gray-300"
-                          }`}
-                        >
-                          <Bookmark className="w-4 h-4" />
-                          <span className="sr-only">{t("home.bookmark")}</span>
-                        </Button>
-                        <Button variant="ghost" size="icon" className="text-gray-600 dark:text-gray-300 interactive">
-                          <Share2 className="w-4 h-4" />
-                          <span className="sr-only">{t("home.share")}</span>
-                        </Button>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                ))}
+                {translatedPosts.length === 0 ? (
+                  <p className="text-center text-gray-500 py-10">No posts in feed yet.</p>
+                ) : (
+                  translatedPosts.map(renderPostCard)
+                )}
               </TabsContent>
 
               <TabsContent value="following" className="mt-4 space-y-6">
-                {/* Following Tab Content */}
-                <Card className="border-none shadow-md hover:shadow-lg transition-shadow select-none">
-                  <CardHeader className="pb-3 select-none">
-                    <div className="flex justify-between">
-                      <div className="flex items-start gap-3">
-                        <Avatar className="border select-none">
-                          <AvatarImage
-                            src="/placeholder.svg?height=40&width=40&text=EC"
-                            alt="Emma Clark"
-                            draggable={false}
-                          />
-                          <AvatarFallback className="bg-sky-700 text-white">EC</AvatarFallback>
-                        </Avatar>
-                        <div className="select-none">
-                          <div className="flex items-center gap-1">
-                            <p className="font-medium select-none">Emma Clark</p>
-                            <VerifiedBadge type="high-profile" />
-                            <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">@emmaclark</p>
-                            <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
-                              • 3 hours ago
-                            </p>
-                          </div>
-                          <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
-                            Product Designer at CreativeStudio
-                          </p>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="icon" className="text-gray-500">
-                        <MoreHorizontal className="w-5 h-5" />
-                        <span className="sr-only">{t("home.moreOptions")}</span>
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pb-3">
-                    <p className="text-gray-800 dark:text-gray-200">
-                      Excited to announce that I'll be speaking at the UX Conference next month about designing for
-                      accessibility. Hope to see some of you there! #UXDesign #Accessibility
-                    </p>
-                    <div className="mt-3 p-4 border rounded-lg bg-muted dark:bg-muted">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                        <span className="font-medium">UX Conference 2023</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Clock className="w-4 h-4" />
-                        <span>June 15-17, 2023 • San Francisco, CA</span>
-                      </div>
-                      <Button className="mt-3 bg-sky-500 hover:bg-sky-600 text-white">{t("home.registerNow")}</Button>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <div className="flex gap-4">
-                      <Button variant="ghost" size="sm" className="gap-1 text-gray-600 dark:text-gray-300">
-                        <ThumbsUp className="w-4 h-4" />
-                        <span>76</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="gap-1 text-gray-600 dark:text-gray-300">
-                        <MessageSquare className="w-4 h-4" />
-                        <span>12</span>
-                      </Button>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm" className="gap-1 text-gray-600 dark:text-gray-300">
-                        <Repeat className="w-4 h-4" />
-                        <span>8</span>
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-gray-600 dark:text-gray-300">
-                        <Bookmark className="w-4 h-4" />
-                        <span className="sr-only">{t("home.bookmark")}</span>
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-gray-600 dark:text-gray-300">
-                        <Share2 className="w-4 h-4" />
-                        <span className="sr-only">{t("home.share")}</span>
-                      </Button>
-                    </div>
-                  </CardFooter>
-                </Card>
+                {translatedPosts.filter((p) => p.isFollowing).length === 0 ? (
+                  <p className="text-center text-gray-500 py-10">No posts from professionals you follow.</p>
+                ) : (
+                  translatedPosts.filter((p) => p.isFollowing).map(renderPostCard)
+                )}
               </TabsContent>
 
               <TabsContent value="trending" className="mt-4 space-y-6">
-                {/* Trending Tab Content */}
-                <Card className="border-none shadow-md hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between">
-                      <div className="flex items-start gap-3">
-                        <Avatar className="border">
-                          <AvatarImage
-                            src="/placeholder.svg?height=40&width=40&text=CBN"
-                            alt="Central Bank of Nigeria"
-                          />
-                          <AvatarFallback className="bg-sky-700 text-white">CBN</AvatarFallback>
-                        </Avatar>
-                        <div className="select-none">
-                          <div className="flex items-center gap-1">
-                            <p className="font-medium select-none">Central Bank of Nigeria</p>
-                            <VerifiedBadge type="organization" />
-                            <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">@cbn</p>
-                            <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">• 1 day ago</p>
-                          </div>
-                          <p className="text-sm text-gray-500 dark:text-muted-foreground select-none">
-                            Nigeria's Central Banking Authority
-                          </p>
-                        </div>
-                      </div>
-                      <Badge className="bg-orange-500 text-white flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3" />
-                        {t("home.trending")}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pb-3">
-                    <p className="text-gray-800 dark:text-gray-200">
-                      Announcing new financial inclusion initiatives to support small businesses across Nigeria. Our
-                      goal is to empower entrepreneurs and drive economic growth in all regions.
-                    </p>
-                    <div className="mt-3 rounded-lg overflow-hidden">
-                      <img
-                        src="/placeholder.svg?height=300&width=600"
-                        alt="Financial inclusion initiative"
-                        className="w-full h-auto select-none"
-                        draggable={false}
-                      />
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <div className="flex gap-4">
-                      <Button variant="ghost" size="sm" className="gap-1 text-sky-600 dark:text-sky-400">
-                        <ThumbsUp className="w-4 h-4" />
-                        <span>1,432</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="gap-1 text-gray-600 dark:text-gray-300">
-                        <MessageSquare className="w-4 h-4" />
-                        <span>287</span>
-                      </Button>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm" className="gap-1 text-gray-600 dark:text-gray-300">
-                        <Repeat className="w-4 h-4" />
-                        <span>356</span>
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-gray-600 dark:text-gray-300">
-                        <Bookmark className="w-4 h-4" />
-                        <span className="sr-only">{t("home.bookmark")}</span>
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-gray-600 dark:text-gray-300">
-                        <Share2 className="w-4 h-4" />
-                        <span className="sr-only">{t("home.share")}</span>
-                      </Button>
-                    </div>
-                  </CardFooter>
-                </Card>
+                {translatedPosts.filter((p) => p.isTrending).length === 0 ? (
+                  <p className="text-center text-gray-500 py-10">No trending topics right now.</p>
+                ) : (
+                  translatedPosts.filter((p) => p.isTrending).map(renderPostCard)
+                )}
               </TabsContent>
             </Tabs>
 

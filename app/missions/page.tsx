@@ -2,7 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { toast } from "sonner"
 import { Search, Award, Clock, Star, CheckCircle, Circle, LinkIcon, FileText, Video, Zap } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -26,7 +27,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 // Mock data for missions
-const missions = [
+const initialMissions = [
   {
     id: "1",
     title: "Build a Responsive Dashboard",
@@ -106,7 +107,7 @@ const missions = [
 ]
 
 // Mock data for user's missions
-const userMissions = [
+const initialUserMissions = [
   {
     id: "7",
     title: "Optimize Website Performance",
@@ -171,9 +172,44 @@ export default function MissionsPage() {
   const [activeTab, setActiveTab] = useState<string>("featured")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [submittingMissionId, setSubmittingMissionId] = useState<string | null>(null)
+
+  const [missionsList, setMissionsList] = useState<any[]>([])
+  const [userMissionsList, setUserMissionsList] = useState<any[]>([])
+
+  useEffect(() => {
+    const savedMissions = localStorage.getItem("proconnect_missions")
+    if (savedMissions) {
+      try {
+        setMissionsList(JSON.parse(savedMissions))
+      } catch {
+        setMissionsList(initialMissions)
+      }
+    } else {
+      setMissionsList(initialMissions)
+      localStorage.setItem("proconnect_missions", JSON.stringify(initialMissions))
+    }
+
+    const savedUserMissions = localStorage.getItem("proconnect_user_missions")
+    if (savedUserMissions) {
+      try {
+        setUserMissionsList(JSON.parse(savedUserMissions))
+      } catch {
+        setUserMissionsList(initialUserMissions)
+      }
+    } else {
+      setUserMissionsList(initialUserMissions)
+      localStorage.setItem("proconnect_user_missions", JSON.stringify(initialUserMissions))
+    }
+  }, [])
+
+  const saveUserMissions = (updatedList: any[]) => {
+    setUserMissionsList(updatedList)
+    localStorage.setItem("proconnect_user_missions", JSON.stringify(updatedList))
+  }
 
   // Filter missions based on selected filters and search query
-  const filteredMissions = missions.filter((mission) => {
+  const filteredMissions = missionsList.filter((mission) => {
     const skillMatch =
       selectedSkill === "all" || mission.skills.some((skill) => skill.toLowerCase() === selectedSkill.toLowerCase())
     const industryMatch = selectedIndustry === "all" || mission.industry === selectedIndustry
@@ -194,38 +230,102 @@ export default function MissionsPage() {
 
   // Filter user missions based on status
   const getFilteredUserMissions = (status: string) => {
-    return userMissions.filter((mission) => mission.status === status)
+    return userMissionsList.filter((mission) => {
+      if (status === "in-progress") {
+        return mission.status === "in-progress" || mission.status === "accepted"
+      }
+      return mission.status === status
+    })
+  }
+
+  const handleAcceptMission = (mission: any) => {
+    const isAlreadyAccepted = userMissionsList.some((m) => m.id === mission.id)
+    if (isAlreadyAccepted) {
+      toast.info(`You have already accepted "${mission.title}".`)
+      return
+    }
+
+    const acceptedMission = {
+      ...mission,
+      status: "in-progress",
+      progress: 0,
+      dueDate: "3 days from now",
+    }
+
+    const updated = [acceptedMission, ...userMissionsList]
+    saveUserMissions(updated)
+    toast.success(`Mission "${mission.title}" accepted! You can track it in My Missions.`)
+  }
+
+  const handleStartWorking = (missionId: string) => {
+    const updated = userMissionsList.map((m) => {
+      if (m.id === missionId) {
+        return {
+          ...m,
+          status: "in-progress",
+          progress: 10,
+        }
+      }
+      return m
+    })
+    saveUserMissions(updated)
+    toast.success("Mission started! Keep up the good work.")
   }
 
   const handleSubmitSolution = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (!submittingMissionId) return
     setIsSubmitting(true)
 
     // Simulate upload progress
     let progress = 0
     const interval = setInterval(() => {
-      progress += 10
+      progress += 25
       setUploadProgress(progress)
 
       if (progress >= 100) {
         clearInterval(interval)
+        
+        const missionToComplete = userMissionsList.find((m) => m.id === submittingMissionId)
+        const updated = userMissionsList.map((m) => {
+          if (m.id === submittingMissionId) {
+            return {
+              ...m,
+              status: "completed",
+              progress: 100,
+              completedDate: "Just now",
+            }
+          }
+          return m
+        })
+
+        saveUserMissions(updated)
         setIsSubmitting(false)
-        // Reset form and close dialog would happen here
+        setSubmittingMissionId(null)
+        setUploadProgress(0)
+
+        // Award XP toast
+        if (missionToComplete) {
+          toast.success(`Solution submitted! You earned ${missionToComplete.xp} XP and the "${missionToComplete.badge}" Badge!`)
+        }
       }
-    }, 300)
+    }, 150)
   }
 
   // Calculate total XP from completed missions
-  const totalCompletedXP = userMissions
+  const totalCompletedXP = userMissionsList
     .filter((mission) => mission.status === "completed")
     .reduce((total, mission) => total + mission.xp, 0)
 
   // Calculate progress percentage for in-progress missions
   const inProgressPercentage =
-    userMissions
-      .filter((mission) => mission.status === "in-progress")
-      .reduce((total, mission) => total + mission.progress, 0) /
-    Math.max(1, userMissions.filter((mission) => mission.status === "in-progress").length)
+    userMissionsList.filter((m) => m.status === "in-progress").length === 0
+      ? 0
+      : userMissionsList
+          .filter((mission) => mission.status === "in-progress")
+          .reduce((total, mission) => total + (mission.progress || 0), 0) /
+        Math.max(1, userMissionsList.filter((mission) => mission.status === "in-progress").length)
+
 
   return (
     <div className="pt-20 pb-16">
@@ -429,7 +529,7 @@ export default function MissionsPage() {
                         <Clock className="h-4 w-4" />
                         <span>{mission.timeRemaining} left</span>
                       </div>
-                      <Button className="bg-sky-500 hover:bg-sky-600 text-white">Accept Mission</Button>
+                      <Button className="bg-sky-500 hover:bg-sky-600 text-white" onClick={() => handleAcceptMission(mission)}>Accept Mission</Button>
                     </CardFooter>
                   </Card>
                 ))}
@@ -481,10 +581,10 @@ export default function MissionsPage() {
                           <Clock className="h-4 w-4" />
                           <span>Due {mission.dueDate}</span>
                         </div>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button className="bg-sky-500 hover:bg-sky-600 text-white">Submit Solution</Button>
-                          </DialogTrigger>
+                         <Dialog open={submittingMissionId === mission.id} onOpenChange={(open) => setSubmittingMissionId(open ? mission.id : null)}>
+                           <DialogTrigger asChild>
+                             <Button className="bg-sky-500 hover:bg-sky-600 text-white" onClick={() => setSubmittingMissionId(mission.id)}>Submit Solution</Button>
+                           </DialogTrigger>
                           <DialogContent className="sm:max-w-[550px]">
                             <DialogHeader>
                               <DialogTitle>Submit Mission Solution</DialogTitle>
@@ -661,7 +761,7 @@ export default function MissionsPage() {
                           <Clock className="h-4 w-4" />
                           <span>Due {mission.dueDate}</span>
                         </div>
-                        <Button className="bg-sky-500 hover:bg-sky-600 text-white">Start Working</Button>
+                        <Button className="bg-sky-500 hover:bg-sky-600 text-white" onClick={() => handleStartWorking(mission.id)}>Start Working</Button>
                       </CardFooter>
                     </Card>
                   ))}
@@ -766,7 +866,7 @@ export default function MissionsPage() {
                       <Clock className="h-4 w-4" />
                       <span>{mission.timeRemaining} left</span>
                     </div>
-                    <Button className="bg-sky-500 hover:bg-sky-600 text-white">Accept Mission</Button>
+                    <Button className="bg-sky-500 hover:bg-sky-600 text-white" onClick={() => handleAcceptMission(mission)}>Accept Mission</Button>
                   </CardFooter>
                 </Card>
               ))}

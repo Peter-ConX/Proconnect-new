@@ -23,6 +23,7 @@ import {
   Cell,
 } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { toast } from "sonner"
 
 // Mock data for analytics
 const profileViewsData = [
@@ -56,6 +57,72 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"]
 export default function PulsePage() {
   const [timeRange, setTimeRange] = useState("6m")
 
+  // Generate scaled/filtered data based on date range selection
+  const getProfileViewsData = () => {
+    switch (timeRange) {
+      case "1m":
+        return profileViewsData.slice(-1)
+      case "3m":
+        return profileViewsData.slice(-3)
+      case "1y":
+        return [
+          { name: "Jul", views: 80 },
+          { name: "Aug", views: 95 },
+          { name: "Sep", views: 110 },
+          { name: "Oct", views: 90 },
+          { name: "Nov", views: 130 },
+          { name: "Dec", views: 105 },
+          ...profileViewsData,
+        ]
+      case "6m":
+      default:
+        return profileViewsData
+    }
+  }
+
+  const getEngagementData = () => {
+    switch (timeRange) {
+      case "1m":
+        return engagementData.slice(-1)
+      case "3m":
+        return engagementData.slice(-3)
+      case "1y":
+        return [
+          { name: "Jul", posts: 2, comments: 8, shares: 1 },
+          { name: "Aug", posts: 4, comments: 12, shares: 2 },
+          { name: "Sep", posts: 5, comments: 14, shares: 2 },
+          { name: "Oct", posts: 3, comments: 10, shares: 1 },
+          { name: "Nov", posts: 6, comments: 16, shares: 3 },
+          { name: "Dec", posts: 5, comments: 15, shares: 2 },
+          ...engagementData,
+        ]
+      case "6m":
+      default:
+        return engagementData
+    }
+  }
+
+  const handleExportData = () => {
+    const dataToExport = {
+      profileViews: getProfileViewsData(),
+      engagement: getEngagementData(),
+      skillsDistribution: skillsDistributionData,
+      timestamp: new Date().toISOString(),
+      timeRange: timeRange,
+    }
+
+    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+      JSON.stringify(dataToExport, null, 2)
+    )}`
+    const downloadAnchor = document.createElement("a")
+    downloadAnchor.setAttribute("href", jsonString)
+    downloadAnchor.setAttribute("download", `proconnect_pulse_analytics_${timeRange}.json`)
+    document.body.appendChild(downloadAnchor)
+    downloadAnchor.click()
+    downloadAnchor.remove()
+    toast.success("Analytics data exported successfully!")
+  }
+
   return (
     <div className="pt-20 pb-16">
       <div className="container mx-auto px-4">
@@ -76,7 +143,7 @@ export default function PulsePage() {
                 <SelectItem value="1y">Last Year</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" onClick={handleExportData}>
               <Download className="h-4 w-4" />
               Export
             </Button>
@@ -103,7 +170,7 @@ export default function PulsePage() {
                 </div>
                 <div className="h-16 w-24">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={profileViewsData}>
+                    <LineChart data={getProfileViewsData()}>
                       <Line type="monotone" dataKey="views" stroke="#0ea5e9" strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
@@ -131,7 +198,7 @@ export default function PulsePage() {
                 </div>
                 <div className="h-16 w-24">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={engagementData}>
+                    <BarChart data={getEngagementData()}>
                       <Bar dataKey="comments" fill="#0ea5e9" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -159,7 +226,7 @@ export default function PulsePage() {
                 </div>
                 <div className="h-16 w-24">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={profileViewsData}>
+                    <LineChart data={getProfileViewsData()}>
                       <Line type="monotone" dataKey="views" stroke="#0ea5e9" strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
@@ -194,7 +261,7 @@ export default function PulsePage() {
                       }}
                     >
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={profileViewsData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <BarChart data={getProfileViewsData()} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="name" />
                           <YAxis />
@@ -231,7 +298,7 @@ export default function PulsePage() {
                       }}
                     >
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={engagementData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <BarChart data={getEngagementData()} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="name" />
                           <YAxis />
@@ -273,7 +340,7 @@ export default function PulsePage() {
                     }}
                   >
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={engagementData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                      <LineChart data={getEngagementData()} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis />

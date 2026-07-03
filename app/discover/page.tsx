@@ -1,5 +1,7 @@
 "use client"
 
+import { useState } from "react"
+import Link from "next/link"
 import { Search, Filter, Compass, TrendingUp, Users, Briefcase, Award } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -7,7 +9,60 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
+const professionals = [
+  {
+    username: "alexmorgan",
+    name: "Alex Morgan",
+    role: "Senior UX Designer",
+    avatar: "/placeholder.svg?height=64&width=64&text=AM",
+    skills: ["UI/UX", "Figma", "User Research", "UX Design"],
+    connections: 342,
+  },
+  {
+    username: "sarahchen",
+    name: "Sarah Chen",
+    role: "Frontend Developer",
+    avatar: "/placeholder.svg?height=64&width=64&text=SC",
+    skills: ["React", "TypeScript", "CSS", "Frontend Development"],
+    connections: 287,
+  },
+  {
+    username: "davidkim",
+    name: "David Kim",
+    role: "Product Manager",
+    avatar: "/placeholder.svg?height=64&width=64&text=DK",
+    skills: ["Product Strategy", "Agile", "Analytics", "Product Management"],
+    connections: 412,
+  },
+  {
+    username: "emmawilson",
+    name: "Emma Wilson",
+    role: "Data Scientist",
+    avatar: "/placeholder.svg?height=64&width=64&text=EW",
+    skills: ["Python", "Machine Learning", "Data Visualization", "Data Science"],
+    connections: 256,
+  },
+]
+
 export default function DiscoverPage() {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
+
+  const filteredProfessionals = professionals.filter((p) => {
+    const matchesSearch =
+      searchQuery === "" ||
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.skills.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()))
+
+    const matchesTag =
+      !selectedTag ||
+      p.skills.some((s) => s.toLowerCase() === selectedTag.toLowerCase()) ||
+      p.role.toLowerCase().includes(selectedTag.toLowerCase())
+
+    return matchesSearch && matchesTag
+  })
+
   return (
     <div className="pt-20 pb-16">
       <div className="container mx-auto px-4">
@@ -20,33 +75,42 @@ export default function DiscoverPage() {
             <div className="flex gap-2 mb-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input placeholder="Search by name, skill, or industry..." className="pl-10" />
+                <Input
+                  placeholder="Search by name, skill, or industry..."
+                  className="pl-10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
               <Button variant="outline" className="gap-2">
                 <Filter className="h-4 w-4" />
                 Filters
               </Button>
-              <Button className="bg-sky-500 hover:bg-sky-600 text-white">Search</Button>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="bg-gray-100 dark:bg-gray-700">
-                Frontend Development
-              </Badge>
-              <Badge variant="outline" className="bg-gray-100 dark:bg-gray-700">
-                UX Design
-              </Badge>
-              <Badge variant="outline" className="bg-gray-100 dark:bg-gray-700">
-                Product Management
-              </Badge>
-              <Badge variant="outline" className="bg-gray-100 dark:bg-gray-700">
-                Data Science
-              </Badge>
-              <Badge variant="outline" className="bg-gray-100 dark:bg-gray-700">
-                Marketing
-              </Badge>
-              <Badge variant="outline" className="bg-gray-100 dark:bg-gray-700">
-                + Add Filter
-              </Badge>
+              {[
+                "Frontend Development",
+                "UX Design",
+                "Product Management",
+                "Data Science",
+                "Marketing",
+              ].map((tag) => {
+                const isSelected = selectedTag === tag
+                return (
+                  <Badge
+                    key={tag}
+                    variant="outline"
+                    className={`cursor-pointer transition-all ${
+                      isSelected
+                        ? "bg-sky-500 text-white border-sky-500 hover:bg-sky-600"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200"
+                    }`}
+                    onClick={() => setSelectedTag(isSelected ? null : tag)}
+                  >
+                    {tag}
+                  </Badge>
+                )
+              })}
             </div>
           </div>
 
@@ -57,70 +121,47 @@ export default function DiscoverPage() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {[
-              {
-                name: "Alex Morgan",
-                role: "Senior UX Designer",
-                avatar: "/placeholder.svg?height=64&width=64&text=AM",
-                skills: ["UI/UX", "Figma", "User Research"],
-                connections: 342,
-              },
-              {
-                name: "Sarah Chen",
-                role: "Frontend Developer",
-                avatar: "/placeholder.svg?height=64&width=64&text=SC",
-                skills: ["React", "TypeScript", "CSS"],
-                connections: 287,
-              },
-              {
-                name: "David Kim",
-                role: "Product Manager",
-                avatar: "/placeholder.svg?height=64&width=64&text=DK",
-                skills: ["Product Strategy", "Agile", "Analytics"],
-                connections: 412,
-              },
-              {
-                name: "Emma Wilson",
-                role: "Data Scientist",
-                avatar: "/placeholder.svg?height=64&width=64&text=EW",
-                skills: ["Python", "Machine Learning", "Data Visualization"],
-                connections: 256,
-              },
-            ].map((person, index) => (
-              <Card key={index} className="border-none shadow-md">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={person.avatar || "/placeholder.svg"} alt={person.name} />
-                      <AvatarFallback className="bg-sky-700 text-white">{person.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-lg">{person.name}</CardTitle>
-                      <CardDescription>{person.role}</CardDescription>
+            {filteredProfessionals.length === 0 ? (
+              <p className="text-gray-500 col-span-2 py-4 text-center">No professionals match your filters.</p>
+            ) : (
+              filteredProfessionals.map((person, index) => (
+                <Card key={index} className="border-none shadow-md">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={person.avatar || "/placeholder.svg"} alt={person.name} />
+                        <AvatarFallback className="bg-sky-700 text-white">{person.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <CardTitle className="text-lg">{person.name}</CardTitle>
+                        <CardDescription>{person.role}</CardDescription>
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pb-2">
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {person.skills.map((skill, i) => (
-                      <Badge
-                        key={i}
-                        variant="secondary"
-                        className="bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-300"
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                  <p className="text-sm text-gray-500">{person.connections} connections</p>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full">
-                    View Profile
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+                  </CardHeader>
+                  <CardContent className="pb-2">
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {person.skills.map((skill, i) => (
+                        <Badge
+                          key={i}
+                          variant="secondary"
+                          className="bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-300"
+                        >
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                    <p className="text-sm text-gray-500">{person.connections} connections</p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link href={`/profile?username=${person.username}`}>
+                        View Profile
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))
+            )}
           </div>
 
           {/* Explore Categories */}
@@ -138,7 +179,11 @@ export default function DiscoverPage() {
               { name: "Product", icon: Users, count: 1105 },
               { name: "Business", icon: Briefcase, count: 1320 },
             ].map((category, index) => (
-              <Card key={index} className="border-none shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+              <Card
+                key={index}
+                className="border-none shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => setSelectedTag(category.name)}
+              >
                 <CardContent className="p-6 flex items-center gap-4">
                   <div className="bg-sky-100 dark:bg-sky-900 p-3 rounded-full">
                     <category.icon className="h-6 w-6 text-sky-600 dark:text-sky-400" />

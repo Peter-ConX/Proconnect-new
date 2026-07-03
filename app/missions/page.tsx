@@ -355,7 +355,7 @@ export default function MissionsPage() {
                   </div>
                   <div className="text-left">
                     <h3 className="font-bold">Badges Earned</h3>
-                    <p className="text-2xl font-bold">{userMissions.filter((m) => m.status === "completed").length}</p>
+                    <p className="text-2xl font-bold">{userMissionsList.filter((m) => m.status === "completed").length}</p>
                   </div>
                 </div>
                 <div className="h-12 w-px bg-white/20 hidden md:block"></div>
@@ -366,7 +366,7 @@ export default function MissionsPage() {
                   <div className="text-left">
                     <h3 className="font-bold">In Progress</h3>
                     <p className="text-2xl font-bold">
-                      {userMissions.filter((m) => m.status === "in-progress").length}
+                      {userMissionsList.filter((m) => m.status === "in-progress").length}
                     </p>
                   </div>
                 </div>

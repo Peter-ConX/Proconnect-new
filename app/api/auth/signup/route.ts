@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { generateStrongPassword } from "@/lib/password-generator"
-import { createUser, getUser } from "@/lib/user-storage"
+import { supabase } from "@/utils/supabase/client"
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,29 +10,54 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Valid email is required" }, { status: 400 })
     }
 
-    // Check if user already exists
-    if (getUser(email)) {
-      return NextResponse.json({ error: "User with this email already exists" }, { status: 400 })
-    }
-
-    // Generate strong password
+    // Generate strong temporary password
     const generatedPassword = generateStrongPassword(16)
 
-    // Store user (in production, use Supabase)
-    createUser(email, generatedPassword)
+    // Register user with Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
+      email: email.toLowerCase(),
+      password: generatedPassword,
+      options: {
+        data: {
+          needsPasswordChange: true,
+        },
+      },
+    })
 
-    // Send password via email
-    // In production, use a service like Resend, SendGrid, or Nodemailer
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    const user = data.user
+
+    // Create a public profile entry if user exists
+    if (user) {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .insert({
+          id: user.id,
+          username: email.split("@")[0].toLowerCase() + Math.floor(Math.random() * 1000),
+          full_name: email.split("@")[0],
+          avatar_url: "/placeholder.svg",
+          role: "user",
+          is_verified: false,
+        })
+      
+      if (profileError) {
+        console.warn("Profile insertion warning:", profileError.message)
+      }
+    }
+
+    // Send password via mock email log
     try {
       await sendPasswordEmail(email, generatedPassword)
     } catch (emailError) {
       console.error("Failed to send email:", emailError)
-      // In development, we'll log it. In production, you might want to handle this differently
     }
 
     return NextResponse.json({
       success: true,
-      message: "Password has been sent to your email. Please check your inbox.",
+      message: "Password has been generated and logged. Please check the terminal console or configure Resend in app/api/auth/signup/route.ts.",
     })
   } catch (error: any) {
     console.error("Signup error:", error)
@@ -41,45 +66,9 @@ export async function POST(request: NextRequest) {
 }
 
 async function sendPasswordEmail(email: string, password: string) {
-  // In production, use a real email service
-  // For now, we'll just log it in development
-  if (process.env.NODE_ENV === "development") {
-    console.log("=".repeat(50))
-    console.log("EMAIL SENT (Development Mode)")
-    console.log("To:", email)
-    console.log("Password:", password)
-    console.log("=".repeat(50))
-  }
-
-  // Example with Resend (uncomment and configure if you have Resend set up):
-  /*
-  const RESEND_API_KEY = process.env.RESEND_API_KEY
-  if (!RESEND_API_KEY) {
-    throw new Error("RESEND_API_KEY not configured")
-  }
-
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: "Proconnect <noreply@proconnect.com>",
-      to: email,
-      subject: "Your Proconnect Account Password",
-      html: `
-        <h1>Welcome to Proconnect!</h1>
-        <p>Your account has been created. Here is your temporary password:</p>
-        <p style="font-size: 18px; font-weight: bold; background: #f0f0f0; padding: 10px; border-radius: 5px; font-family: monospace;">${password}</p>
-        <p>Please log in with this password and change it immediately for security.</p>
-        <p>If you didn't create this account, please ignore this email.</p>
-      `,
-    }),
-  })
-
-  if (!response.ok) {
-    throw new Error("Failed to send email")
-  }
-  */
+  // In development, log the temporary password so the admin/user can see it
+  console.log("=".repeat(50))
+  console.log("TEMPORARY PASSWORD FOR:", email)
+  console.log("Password:", password)
+  console.log("=".repeat(50))
 }

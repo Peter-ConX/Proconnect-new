@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
+import { supabase } from "@/utils/supabase/client"
 
 // Mock data for messages
 const initialMessages = [
@@ -163,17 +164,62 @@ export default function InboxPage() {
   const [isComposeOpen, setIsComposeOpen] = useState(false)
 
   useEffect(() => {
-    const saved = localStorage.getItem("proconnect_messages")
-    if (saved) {
+    const fetchMessages = async () => {
       try {
-        setMessageList(JSON.parse(saved))
-      } catch {
-        setMessageList(initialMessages)
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: dbMessages, error } = await supabase
+            .from("messages")
+            .select("*")
+            .order("created_at", { ascending: false })
+
+          if (!error && dbMessages && dbMessages.length > 0) {
+            const mapped = dbMessages.map((m: any) => ({
+              id: String(m.id),
+              sender: {
+                name: m.sender_name || "External Contact",
+                avatar: m.sender_avatar || "/placeholder.svg",
+                role: m.sender_role || "Professional",
+                email: m.sender_email || "contact@example.com"
+              },
+              recipients: [m.recipient_email || "you@example.com"],
+              subject: m.subject || "No Subject",
+              preview: m.preview || m.content?.replace(/<[^>]*>/g, '').slice(0, 80) + "...",
+              content: m.content || "",
+              date: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              isRead: m.is_read,
+              isStarred: m.is_starred,
+              folder: m.folder || "inbox",
+              attachments: m.attachments || []
+            }))
+            setMessageList(mapped)
+            if (mapped.length > 0) {
+              setSelectedMessageId(mapped[0].id)
+            }
+            return
+          }
+        }
+      } catch (e) {
+        console.error("Supabase load error:", e)
       }
-    } else {
-      setMessageList(initialMessages)
-      localStorage.setItem("proconnect_messages", JSON.stringify(initialMessages))
+
+      // Local storage fallback
+      const saved = localStorage.getItem("proconnect_messages")
+      if (saved) {
+        try {
+          const list = JSON.parse(saved)
+          setMessageList(list)
+          if (list.length > 0) setSelectedMessageId(list[0].id)
+        } catch {
+          setMessageList(initialMessages)
+        }
+      } else {
+        setMessageList(initialMessages)
+        localStorage.setItem("proconnect_messages", JSON.stringify(initialMessages))
+      }
     }
+
+    fetchMessages()
   }, [])
 
   const saveMessages = (updatedList: any[]) => {
@@ -201,7 +247,7 @@ export default function InboxPage() {
   const selectedMessage = messageList.find((m) => m.id === selectedMessageId)
 
   // Handle setting a message as read when clicked
-  const handleSelectMessage = (id: string) => {
+  const handleSelectMessage = async (id: string) => {
     setSelectedMessageId(id)
     const updated = messageList.map((m) => {
       if (m.id === id) {
@@ -210,22 +256,38 @@ export default function InboxPage() {
       return m
     })
     saveMessages(updated)
+
+    // Update in Supabase
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase
+          .from("messages")
+          .update({ is_read: true })
+          .eq("id", id)
+      }
+    } catch (e) {
+      console.warn(e)
+    }
   }
 
-  const handleSendReply = (e: React.FormEvent) => {
+  const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!replyContent.trim() || !selectedMessageId) return
+
+    const selected = messageList.find(m => m.id === selectedMessageId)
+    const newContent = selected.content + `
+      <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+        <p class="text-xs text-gray-500 font-semibold mb-1">Okafor Chidera • Just now:</p>
+        <p class="text-sm text-gray-700 dark:text-gray-300">${replyContent.replace(/\n/g, '<br>')}</p>
+      </div>
+    `
 
     const updated = messageList.map((m) => {
       if (m.id === selectedMessageId) {
         return {
           ...m,
-          content: m.content + `
-            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-              <p class="text-xs text-gray-500 font-semibold mb-1">Okafor Chidera • Just now:</p>
-              <p class="text-sm text-gray-700 dark:text-gray-300">${replyContent.replace(/\n/g, '<br>')}</p>
-            </div>
-          `
+          content: newContent
         }
       }
       return m
@@ -234,9 +296,22 @@ export default function InboxPage() {
     saveMessages(updated)
     setReplyContent("")
     toast.success("Reply sent successfully!")
+
+    // Update in Supabase
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase
+          .from("messages")
+          .update({ content: newContent })
+          .eq("id", selectedMessageId)
+      }
+    } catch (e) {
+      console.warn(e)
+    }
   }
 
-  const handleToggleStar = (id: string) => {
+  const handleToggleStar = async (id: string) => {
     const updated = messageList.map((m) => {
       if (m.id === id) {
         return { ...m, isStarred: !m.isStarred }
@@ -246,9 +321,22 @@ export default function InboxPage() {
     saveMessages(updated)
     const target = updated.find(m => m.id === id)
     toast.success(target?.isStarred ? "Starred message" : "Unstarred message")
+
+    // Update in Supabase
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase
+          .from("messages")
+          .update({ is_starred: target?.isStarred })
+          .eq("id", id)
+      }
+    } catch (e) {
+      console.warn(e)
+    }
   }
 
-  const handleToggleArchive = (id: string) => {
+  const handleToggleArchive = async (id: string) => {
     const updated = messageList.map((m) => {
       if (m.id === id) {
         return { ...m, folder: m.folder === "archive" ? "inbox" : "archive" }
@@ -258,24 +346,51 @@ export default function InboxPage() {
     saveMessages(updated)
     const target = updated.find(m => m.id === id)
     toast.success(target?.folder === "archive" ? "Archived message" : "Moved message back to Inbox")
+
+    // Update in Supabase
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase
+          .from("messages")
+          .update({ folder: target?.folder })
+          .eq("id", id)
+      }
+    } catch (e) {
+      console.warn(e)
+    }
   }
 
-  const handleDeleteMessage = (id: string) => {
+  const handleDeleteMessage = async (id: string) => {
     const updated = messageList.filter((m) => m.id !== id)
     saveMessages(updated)
     setSelectedMessageId(updated[0]?.id || null)
     toast.success("Message deleted permanently.")
+
+    // Delete in Supabase
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase
+          .from("messages")
+          .delete()
+          .eq("id", id)
+      }
+    } catch (e) {
+      console.warn(e)
+    }
   }
 
-  const handleCompose = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCompose = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     const to = formData.get("to") as string
     const subject = formData.get("subject") as string
     const body = formData.get("body") as string
 
+    const newMessageId = String(Date.now())
     const newMessage = {
-      id: String(Date.now()),
+      id: newMessageId,
       sender: {
         name: "Okafor Chidera",
         avatar: "/images/profile-picture.jpeg",
@@ -290,12 +405,37 @@ export default function InboxPage() {
       isRead: true,
       isStarred: false,
       folder: "sent",
+      attachments: []
     }
 
     const updated = [newMessage, ...messageList]
     saveMessages(updated)
     setIsComposeOpen(false)
     toast.success(`Message sent successfully to ${to}!`)
+
+    // Write to Supabase
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase.from("messages").insert({
+          id: newMessageId,
+          sender_name: "Okafor Chidera",
+          sender_avatar: "/images/profile-picture.jpeg",
+          sender_role: "Founder, C.E.O of Proconnect",
+          sender_email: user.email,
+          recipient_email: to,
+          subject,
+          content: `<p>${body.replace(/\n/g, '<br>')}</p>`,
+          preview: body.slice(0, 80) + "...",
+          folder: "sent",
+          is_read: true,
+          is_starred: false,
+          attachments: []
+        })
+      }
+    } catch (e) {
+      console.warn(e)
+    }
   }
 
   return (

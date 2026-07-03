@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getUser } from "@/lib/user-storage"
+import { supabase } from "@/utils/supabase/client"
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,24 +9,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 })
     }
 
-    // In production, fetch from Supabase and verify password hash
-    const user = getUser(email)
+    // Authenticate with Supabase Auth
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.toLowerCase(),
+      password,
+    })
 
-    if (!user) {
-      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 401 })
     }
 
-    // In production, use bcrypt or similar to verify hashed password
-    if (user.password !== password) {
-      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
-    }
+    const user = data.user
+    
+    // Check if profile needs password change (metadata or database query)
+    const needsPasswordChange = user?.user_metadata?.needsPasswordChange ?? false
 
-    // Return user data
+    // Return authenticated user data
     return NextResponse.json({
       success: true,
       user: {
-        email: user.email,
-        needsPasswordChange: user.needsPasswordChange,
+        email: user?.email,
+        id: user?.id,
+        needsPasswordChange,
       },
     })
   } catch (error: any) {

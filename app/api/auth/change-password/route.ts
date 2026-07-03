@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getUser, updateUser } from "@/lib/user-storage"
+import { supabase } from "@/utils/supabase/client"
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,22 +13,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 })
     }
 
-    const user = getUser(email)
+    // 1. Authenticate with Supabase using current password
+    const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.toLowerCase(),
+      password: currentPassword,
+    })
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
-    }
-
-    // Verify current password
-    if (user.password !== currentPassword) {
+    if (signInError) {
       return NextResponse.json({ error: "Current password is incorrect" }, { status: 401 })
     }
 
-    // Update password and mark as changed
-    updateUser(email, {
-      password: newPassword, // In production, hash this!
-      needsPasswordChange: false,
+    // 2. Set new password and update metadata (using the active session or service client)
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+      data: { needsPasswordChange: false },
     })
+
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 400 })
+    }
+
+    // Sign out to clear the session
+    await supabase.auth.signOut()
 
     return NextResponse.json({
       success: true,

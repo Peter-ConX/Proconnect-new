@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { VerifiedBadge } from "@/components/verified-badge"
 import {
   MapPin,
   UserPlus,
@@ -677,7 +678,12 @@ export default function ProfilePage() {
 
             <div className="ml-36 pt-4 md:flex md:justify-between md:items-start">
               <div>
-                <h1 className="text-2xl font-bold">{profile.name}</h1>
+                <h1 className="text-2xl font-bold flex items-center gap-1.5">
+                  {profile.name}
+                  {["Alex Morgan", "Sarah Chen", "David Kim", "Emma Wilson", "John Doe", "Jane Smith", "David Lee"].includes(profile.name) && (
+                    <VerifiedBadge className="h-5 w-5 bg-transparent text-[#0095f6]" />
+                  )}
+                </h1>
                 <p className="text-gray-600 dark:text-gray-400">{profile.profession}</p>
                 <div className="flex items-center gap-2 mt-1 text-gray-500">
                   <MapPin className="h-4 w-4" />

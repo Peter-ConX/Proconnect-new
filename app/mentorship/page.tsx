@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { VerifiedBadge } from "@/components/verified-badge"
 import { Search, Filter, MessageSquare, Calendar, Award, BookOpen, Clock, Users, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -216,13 +218,20 @@ export default function MentorshipPage() {
                   return (
                     <Card key={mentor.id} className="border-none shadow-md overflow-hidden">
                       <CardHeader className="text-center pb-2">
-                        <Avatar className="h-24 w-24 mx-auto mb-4 border-2 border-sky-500/20 shadow-md">
-                          <AvatarImage src={mentor.imageUrl || "/placeholder.svg"} alt={mentor.name} />
-                          <AvatarFallback className="bg-sky-700 text-white text-xl">
-                            {mentor.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <CardTitle className="text-xl font-bold">{mentor.name}</CardTitle>
+                        <Link href={`/mentorship/${mentor.id}`} className="block">
+                          <Avatar className="h-24 w-24 mx-auto mb-4 border-2 border-sky-500/20 shadow-md cursor-pointer hover:scale-105 transition-transform">
+                            <AvatarImage src={mentor.imageUrl || "/placeholder.svg"} alt={mentor.name} />
+                            <AvatarFallback className="bg-sky-700 text-white text-xl">
+                              {mentor.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                        </Link>
+                        <Link href={`/mentorship/${mentor.id}`}>
+                          <CardTitle className="text-xl font-bold flex items-center justify-center gap-1.5 cursor-pointer hover:text-sky-600 transition-colors">
+                            {mentor.name}
+                            <VerifiedBadge className="h-4.5 w-4.5 bg-transparent text-[#0095f6]" />
+                          </CardTitle>
+                        </Link>
                         <CardDescription className="text-sky-600 dark:text-sky-400 font-medium">
                           {mentor.expertise}
                         </CardDescription>

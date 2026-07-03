@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { VerifiedBadge } from "@/components/verified-badge"
 import { usePathname } from "next/navigation"
 import {
   Home,
@@ -84,8 +85,9 @@ export function Navigation() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-sky-500 to-orange-500 shadow-md h-16 flex items-center">
         <div className="w-full flex items-center justify-between px-4 md:px-6">
           {/* Logo */}
-          <Link href="/home" className="flex items-center flex-shrink-0">
+          <Link href="/home" className="flex items-center flex-shrink-0 gap-1.5">
             <span className="text-2xl font-bold text-yellow-500">Proconnect</span>
+            <VerifiedBadge className="h-5 w-5 bg-white text-[#0095f6]" />
           </Link>
 
           {/* Mobile Menu Button */}

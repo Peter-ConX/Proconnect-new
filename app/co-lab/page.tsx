@@ -137,6 +137,7 @@ export default function CoLabPage() {
     const status = formData.get("status") as string
     const dueDate = formData.get("dueDate") as string
     const skillsString = formData.get("skills") as string || ""
+    const rules = formData.get("rules") as string || ""
 
     const newCollab = {
       id: String(Date.now()),
@@ -148,7 +149,8 @@ export default function CoLabPage() {
       members: [
         { name: "Okafor Chidera", avatar: "/images/profile-picture.jpeg", role: "Initiator" }
       ],
-      skills: skillsString.split(",").map(s => s.trim()).filter(Boolean)
+      skills: skillsString.split(",").map(s => s.trim()).filter(Boolean),
+      rules
     }
 
     const updated = [newCollab, ...collabList]
@@ -220,6 +222,15 @@ export default function CoLabPage() {
                 {selectedCollab.description}
               </p>
             </div>
+
+            {selectedCollab.rules && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold mb-2">Collaboration Rules & Guidelines</h3>
+                <div className="p-4 bg-sky-50/30 dark:bg-sky-950/10 border border-sky-100 dark:border-sky-900 rounded-lg">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{selectedCollab.rules}</p>
+                </div>
+              </div>
+            )}
 
             <div className="mb-8">
               <h3 className="text-lg font-semibold mb-2">Required Skills</h3>
@@ -324,6 +335,10 @@ export default function CoLabPage() {
                 <div className="space-y-2">
                   <Label htmlFor="skills">Required Skills (Comma separated)</Label>
                   <Input id="skills" name="skills" placeholder="e.g. UI/UX, React, Machine Learning" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rules">Collaboration Rules & Guidelines <span className="text-red-500">*</span></Label>
+                  <Textarea id="rules" name="rules" placeholder="Establish rules for this group before launching it (e.g. 1. Respect members, 2. Submit daily progress)..." rows={3} required />
                 </div>
 
                 <DialogFooter className="mt-4">

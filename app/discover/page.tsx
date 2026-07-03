@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { VerifiedBadge } from "@/components/verified-badge"
 import { Search, Filter, Compass, TrendingUp, Users, Briefcase, Award } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -133,7 +134,10 @@ export default function DiscoverPage() {
                         <AvatarFallback className="bg-sky-700 text-white">{person.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <CardTitle className="text-lg">{person.name}</CardTitle>
+                        <CardTitle className="text-lg flex items-center gap-1.5">
+                          {person.name}
+                          <VerifiedBadge className="h-4 w-4 bg-transparent text-[#0095f6]" />
+                        </CardTitle>
                         <CardDescription>{person.role}</CardDescription>
                       </div>
                     </div>

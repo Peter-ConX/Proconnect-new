@@ -1,0 +1,259 @@
+"use client"
+
+import type React from "react"
+import { useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { Eye, EyeOff, Loader2, ArrowRight, CheckCircle2 } from "lucide-react"
+import { useAuth } from "@/context/auth-context"
+
+export default function SignUpPage() {
+  const router = useRouter()
+  const { signUpWithEmail, signInWithGoogle } = useAuth()
+
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!termsAccepted) {
+      setError("Please accept the Terms & Conditions to continue.")
+      return
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.")
+      return
+    }
+
+    setIsLoading(true)
+    setError("")
+
+    const result = await signUpWithEmail(firstName, lastName, email, password)
+    if (result.error) {
+      setError(result.error)
+      setIsLoading(false)
+      return
+    }
+
+    setSuccess(true)
+    setIsLoading(false)
+  }
+
+  const handleGoogleSignUp = async () => {
+    setIsGoogleLoading(true)
+    setError("")
+    const result = await signInWithGoogle()
+    if (result.error) {
+      setError(result.error)
+      setIsGoogleLoading(false)
+    }
+    // If no error, Google redirects the browser — no need to setIsGoogleLoading(false)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-sky-950 p-4">
+      {/* Card */}
+      <div className="w-full max-w-4xl min-h-[580px] rounded-3xl overflow-hidden shadow-2xl flex">
+
+        {/* ── LEFT PANEL ── */}
+        <div
+          className="hidden md:flex md:w-[45%] relative flex-col justify-end p-10 overflow-hidden"
+          style={{
+            backgroundImage: "url('/auth-panel-bg.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          {/* Dark overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+          {/* Text */}
+          <div className="relative z-10">
+            <h1 className="text-4xl font-bold text-white leading-tight mb-3">
+              Join<br />Proconnect
+            </h1>
+            <p className="text-white/75 text-base leading-relaxed">
+              Connect with professionals and<br />showcase your work.
+            </p>
+          </div>
+        </div>
+
+        {/* ── RIGHT PANEL ── */}
+        <div className="flex-1 bg-white flex flex-col justify-center px-10 py-10">
+
+          {success ? (
+            /* ── Success state ── */
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">Account created!</h2>
+              <p className="text-gray-500 text-sm max-w-xs">
+                We've sent a confirmation email to <strong>{email}</strong>.
+                Please verify your email, then sign in.
+              </p>
+              <button
+                onClick={() => router.push("/signin")}
+                className="mt-2 text-sky-600 font-medium hover:underline text-sm"
+              >
+                Go to Sign In →
+              </button>
+            </div>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold text-gray-900 mb-7">Sign Up</h2>
+
+              {error && (
+                <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Name row */}
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <input
+                      id="signup-first-name"
+                      type="text"
+                      placeholder="First name"
+                      required
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent transition"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      id="signup-last-name"
+                      type="text"
+                      placeholder="Last name"
+                      required
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent transition"
+                    />
+                  </div>
+                </div>
+
+                {/* Email */}
+                <input
+                  id="signup-email"
+                  type="email"
+                  placeholder="Email address"
+                  required
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent transition"
+                />
+
+                {/* Password */}
+                <div className="relative">
+                  <input
+                    id="signup-password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    required
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-4 py-3 pr-11 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </div>
+
+                {/* Terms checkbox */}
+                <label
+                  htmlFor="signup-terms"
+                  className="flex items-center gap-2 cursor-pointer select-none"
+                >
+                  <input
+                    id="signup-terms"
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-sky-500 focus:ring-sky-400 cursor-pointer"
+                  />
+                  <span className="text-xs text-gray-500">
+                    Accept{" "}
+                    <Link href="/terms" className="text-sky-600 hover:underline">
+                      Terms &amp; Conditions
+                    </Link>
+                  </span>
+                </label>
+
+                {/* CTA button */}
+                <button
+                  id="signup-submit"
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-semibold text-sm transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      Join us <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+
+                {/* Divider */}
+                <div className="flex items-center gap-3 my-1">
+                  <div className="flex-1 h-px bg-gray-200" />
+                  <span className="text-xs text-gray-400">or</span>
+                  <div className="flex-1 h-px bg-gray-200" />
+                </div>
+
+                {/* Google sign-up */}
+                <button
+                  id="signup-google"
+                  type="button"
+                  onClick={handleGoogleSignUp}
+                  disabled={isGoogleLoading}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium text-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isGoogleLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" viewBox="0 0 24 24">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                      </svg>
+                      Sign up with Google
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {/* Footer link */}
+              <p className="mt-6 text-center text-xs text-gray-400">
+                Already have an account?{" "}
+                <Link href="/signin" className="text-sky-600 font-medium hover:underline">
+                  Sign in
+                </Link>
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -33,6 +33,7 @@ import type { TranslationKey } from "@/lib/translations"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { LogOut, LogIn, User as UserIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/context/auth-context"
 
 // Main navigation items structure (translation keys will be used for names)
 const mainNavItems: Array<{ nameKey: TranslationKey; href: string; icon: any; group: string }> = [
@@ -63,21 +64,30 @@ export function Navigation() {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { t } = useLanguage()
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const { user, session, signOut } = useAuth()
 
-  // Check if user is logged in
-  React.useEffect(() => {
-    const userEmail = localStorage.getItem("userEmail")
-    setIsLoggedIn(!!userEmail)
-  }, [])
+  const isLoggedIn = !!session
 
-  const handleLogout = () => {
-    localStorage.removeItem("userEmail")
-    setIsLoggedIn(false)
-    router.push("/auth")
+  const handleLogout = async () => {
+    await signOut()
+    router.push("/signin")
   }
 
+  // Derive display info from real Supabase user metadata
+  const displayName = user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    user?.email?.split("@")[0] ||
+    "User"
+  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || "/images/profile-picture.jpeg"
+  const initials = displayName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
+
   const allItems = [...mainNavItems, ...featureNavItems]
+
+  // Don't render navigation on auth pages (those pages are full-screen overlays)
+  const authPaths = ["/signin", "/signup", "/auth"]
+  if (authPaths.some((p) => pathname === p || pathname.startsWith("/auth/"))) {
+    return null
+  }
 
   return (
     <>
@@ -109,8 +119,8 @@ export function Navigation() {
                 <DropdownMenuTrigger asChild>
                   <button className="focus:outline-none">
                     <Avatar className="h-8 w-8 border-2 border-white cursor-pointer hover:ring-2 hover:ring-white/50 transition-all">
-                      <AvatarImage src="/images/profile-picture.jpeg" alt="@user" />
-                      <AvatarFallback className="bg-white text-orange-500">OC</AvatarFallback>
+                      <AvatarImage src={avatarUrl} alt={displayName} />
+                      <AvatarFallback className="bg-white text-orange-500">{initials}</AvatarFallback>
                     </Avatar>
                   </button>
                 </DropdownMenuTrigger>
@@ -128,7 +138,7 @@ export function Navigation() {
               </DropdownMenu>
             ) : (
               <Button
-                onClick={() => router.push("/auth")}
+                onClick={() => router.push("/signin")}
                 variant="outline"
                 size="sm"
                 className="border-white/30 text-white hover:bg-white/10"
@@ -219,19 +229,19 @@ export function Navigation() {
           {isLoggedIn ? (
             <div className="flex items-center gap-3 mb-3">
               <Avatar className="h-10 w-10 flex-shrink-0">
-                <AvatarImage src="/images/profile-picture.jpeg" alt="@user" />
-                <AvatarFallback className="bg-orange-500 text-white">OC</AvatarFallback>
+                <AvatarImage src={avatarUrl} alt={displayName} />
+                <AvatarFallback className="bg-orange-500 text-white">{initials}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">{t("nav.user")}</p>
-                <p className="text-xs text-muted-foreground">{t("nav.viewProfile")}</p>
+                <p className="text-sm font-medium text-foreground">{displayName}</p>
+                <p className="text-xs text-muted-foreground">{user?.email ?? ""}</p>
               </div>
             </div>
           ) : (
             <Button
               onClick={() => {
                 setSidebarOpen(false)
-                router.push("/auth")
+                router.push("/signin")
               }}
               variant="outline"
               className="w-full mb-3"

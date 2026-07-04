@@ -4,6 +4,8 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/context/language-context"
+import { AuthProvider } from "@/context/auth-context"
+import { AuthGuard } from "@/components/auth/auth-guard"
 import { Navigation } from "@/components/navigation"
 import { FloatingChatButton } from "@/components/petrix/floating-chat-button"
 import { Toaster } from "sonner"
@@ -26,12 +28,16 @@ export default function RootLayout({
       <body className={inter.className}>
         <LanguageProvider>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-            <Navigation />
-            <main className="pt-16 md:pl-64 min-h-screen bg-background">
-              <div className="container mx-auto px-4 py-6">{children}</div>
-            </main>
-            <FloatingChatButton />
-            <Toaster richColors position="top-right" />
+            <AuthProvider>
+              <AuthGuard>
+                <Navigation />
+                <main className="pt-16 md:pl-64 min-h-screen bg-background">
+                  <div className="container mx-auto px-4 py-6">{children}</div>
+                </main>
+                <FloatingChatButton />
+                <Toaster richColors position="top-right" />
+              </AuthGuard>
+            </AuthProvider>
           </ThemeProvider>
         </LanguageProvider>
       </body>

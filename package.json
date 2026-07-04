@@ -49,7 +49,7 @@
     "groq-sdk": "latest",
     "input-otp": "latest",
     "lucide-react": "^0.454.0",
-    "next": "^16.2.10",
+    "next": "16.2.10",
     "next-themes": "latest",
     "openai": "latest",
     "react": "^19",

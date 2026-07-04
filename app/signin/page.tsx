@@ -18,8 +18,6 @@ export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [error, setError] = useState("")
-  const [resetSent, setResetSent] = useState(false)
-  const [isResettingPassword, setIsResettingPassword] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -45,21 +43,7 @@ export default function SignInPage() {
     }
   }
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      setError("Please enter your email address first, then click 'Forgot password?'")
-      return
-    }
-    setIsResettingPassword(true)
-    setError("")
-    const result = await resetPassword(email)
-    setIsResettingPassword(false)
-    if (result.error) {
-      setError(result.error)
-    } else {
-      setResetSent(true)
-    }
-  }
+
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col md:flex-row bg-[#f8f9fa] overflow-hidden" style={{ fontFamily: "Inter, sans-serif" }}>
@@ -164,15 +148,7 @@ export default function SignInPage() {
               </p>
             </div>
 
-            {/* Success reset banner */}
-            {resetSent && (
-              <div
-                className="px-4 py-3 rounded-lg border text-sm"
-                style={{ backgroundColor: "#e6f4ea", borderColor: "#34a853", color: "#1a5e30", fontSize: "14px" }}
-              >
-                ✓ Password reset email sent to <strong>{email}</strong>. Check your inbox.
-              </div>
-            )}
+
 
             {/* Error banner */}
             {error && (
@@ -194,7 +170,7 @@ export default function SignInPage() {
                   className="block font-medium text-[#191c1d]"
                   style={{ fontSize: "14px", lineHeight: "20px" }}
                 >
-                  Email address
+                  Email or username
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#737784]">
@@ -202,10 +178,10 @@ export default function SignInPage() {
                   </div>
                   <input
                     id="signin-email"
-                    type="email"
-                    placeholder="name@company.com"
+                    type="text"
+                    placeholder="Email or username"
                     required
-                    autoComplete="email"
+                    autoComplete="username"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="block w-full pl-10 pr-3 py-2.5 rounded-lg border bg-white text-[#191c1d] placeholder-[#737784] outline-none transition-shadow"
@@ -226,16 +202,14 @@ export default function SignInPage() {
                   >
                     Password
                   </label>
-                  <button
-                    type="button"
+                  <Link
+                    href="/forgot-password"
                     id="signin-forgot-password"
-                    onClick={handleForgotPassword}
-                    disabled={isResettingPassword}
-                    className="text-[#0047ab] hover:text-[#00327d] transition-colors focus:outline-none rounded-sm disabled:opacity-60"
+                    className="text-[#0047ab] hover:text-[#00327d] transition-colors focus:outline-none rounded-sm"
                     style={{ fontSize: "12px", lineHeight: "16px", letterSpacing: "0.02em" }}
                   >
-                    {isResettingPassword ? "Sending…" : "Forgot password?"}
-                  </button>
+                    Forgot password?
+                  </Link>
                 </div>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#737784]">

@@ -6,12 +6,27 @@ export async function POST(request: NextRequest) {
     const { email, password } = await request.json()
 
     if (!email || !password) {
-      return NextResponse.json({ error: "Email and password are required" }, { status: 400 })
+      return NextResponse.json({ error: "Email/username and password are required" }, { status: 400 })
+    }
+
+    let loginEmail = email.toLowerCase()
+
+    // If it doesn't look like an email, try resolving it as a username
+    if (!loginEmail.includes('@')) {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('username', loginEmail)
+        .single()
+        
+      if (profile && profile.email) {
+        loginEmail = profile.email
+      }
     }
 
     // Authenticate with Supabase Auth
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.toLowerCase(),
+      email: loginEmail,
       password,
     })
 
@@ -20,13 +35,11 @@ export async function POST(request: NextRequest) {
     }
 
     const user = data.user
-    
-    // Check if profile needs password change (metadata or database query)
     const needsPasswordChange = user?.user_metadata?.needsPasswordChange ?? false
 
-    // Return authenticated user data
     return NextResponse.json({
       success: true,
+      session: data.session,
       user: {
         email: user?.email,
         id: user?.id,
@@ -35,6 +48,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error: any) {
     console.error("Login error:", error)
-    return NextResponse.json({ error: "Failed to login" }, { status: 500 })
+    return NextResponse.json({ error: "An unexpected error occurred during login" }, { status: 500 })
   }
 }

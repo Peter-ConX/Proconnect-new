@@ -48,9 +48,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signInWithEmail = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) return { error: error.message }
-    return {}
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json()
+      
+      if (!res.ok) {
+        return { error: data.error || 'Failed to sign in' }
+      }
+      
+      if (data.session) {
+        const { error } = await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        })
+        if (error) return { error: error.message }
+      }
+      return {}
+    } catch (err: any) {
+      console.error('Sign in network error:', err)
+      return { error: 'Network error: Failed to connect to the authentication server.' }
+    }
   }
 
   const signUpWithEmail = async (
@@ -59,19 +80,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     email: string,
     password: string
   ) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: `${firstName} ${lastName}`,
-          first_name: firstName,
-          last_name: lastName,
-        },
-      },
-    })
-    if (error) return { error: error.message }
-    return {}
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName, email, password }),
+      })
+      const data = await res.json()
+      
+      if (!res.ok) {
+        return { error: data.error || 'Failed to sign up' }
+      }
+      
+      if (data.session) {
+        const { error } = await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        })
+        if (error) return { error: error.message }
+      }
+      return {}
+    } catch (err: any) {
+      console.error('Sign up network error:', err)
+      return { error: 'Network error: Failed to connect to the authentication server.' }
+    }
   }
 
   const signInWithGoogle = async () => {
